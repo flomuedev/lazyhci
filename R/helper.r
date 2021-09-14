@@ -1,3 +1,10 @@
+#' setwd_to_clipboard
+#'
+#' Changes the working directory to the one in the clipboard
+#' @export
+setwd_to_clipboard <- function() {
+  setwd(chartr("\\", "/", readClipboard()))
+}
 #' se
 #'
 #' This function allows you to calculate the standard error

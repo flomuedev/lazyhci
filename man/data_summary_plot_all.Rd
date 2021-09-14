@@ -8,10 +8,10 @@ data_summary_plot_all(
   data,
   varnames,
   groupnames,
-  outdir,
-  prefix,
-  p.width,
-  p.height,
+  outdir = file.path(getwd(), "plots"),
+  prefix = "plot",
+  p.width = NULL,
+  p.height = NULL,
   fun.sum = mean,
   fun.error = sd,
   scale_fill_manual = NULL
@@ -24,9 +24,9 @@ data_summary_plot_all(
 
 \item{groupnames}{a vector of the names of the grouping variables}
 
-\item{outdir}{a file.path pointing to the directory to save the plots}
+\item{outdir}{(optional) a file.path pointing to the directory to save the plots. Defaults to 'plots' within the current working dir.}
 
-\item{prefix}{a string to prefix the file names of the plots}
+\item{prefix}{(optional) a string to prefix the file names of the plots. Defaults to 'plot'}
 
 \item{p.width}{(optional) the width of the plot}
 
