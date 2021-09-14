@@ -2,4 +2,6 @@
 
 export(check_complete_design)
 export(data_summary_plot)
+export(data_summary_plot_all)
+export(data_summary_plot_multiple)
 export(se)
