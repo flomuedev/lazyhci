@@ -18,46 +18,77 @@ se <- function(x, na.rm=FALSE) {
 #'
 #' This function checks if the data is complete for your design for one DV
 #' @param data the data
-#' @param IVs a vector of the names of your IV cols
+#' @param within.vars a vector of the names of your within IV cols
+#' @param between.vars a vector of the names of your between IV cols
 #' @param participantCol the name of your participant ID col
 #' @param DV the name of the dependent variable column
 #' @export
-check_complete_design <- function(data, IVs, participantCol, DV) {
+check_complete_design <- function(data, within.vars = NULL, between.vars = NULL, participantCol, DV) {
 
-  data.sum <- data %>% 
-    dplyr::group_by_at(c(IVs, participantCol), .drop=FALSE) %>%
-    dplyr::summarise(
-      n = n(),
-      val = mean(!!as.name(DV))
-    )
-  
-  missing <- data.sum %>%
-    filter(n == 0)
-  
-  higher <- data.sum %>%
-    filter(n > 1)
-  
-  na.nan <- data.sum %>%
-    filter(is.na(val) || is.nan(val))
-  
-  if(nrow(missing) != 0) {
-    print("This is not a complete design, go and yell at the student. The following condition data is missing:")
-    print("")
-    print(as.data.frame(missing))
-    return(FALSE)
+  if(!is.null(within.vars)) {
+    data.sum <- data %>% 
+      dplyr::group_by_at(c(within.vars, participantCol), .drop=FALSE) %>%
+      dplyr::summarise(
+        n = n(),
+        val = mean(!!as.name(DV))
+      )
+    
+    missing <- data.sum %>%
+      filter(n == 0)
+    
+    higher <- data.sum %>%
+      filter(n > 1)
+    
+    na.nan <- data.sum %>%
+      filter(is.na(val) || is.nan(val))
+    
+    if(nrow(missing) != 0) {
+      warning("This is not a complete design, go and yell at the student. The following condition data is missing:")
+      warning("")
+      warning(as.data.frame(missing))
+      return(FALSE)
+    }
+    
+    if(nrow(na.nan) != 0) {
+      warning("There are NAs or NANs in the table, go and yell at the student. The following conditions contain NAs or NANs:")
+      warning("")
+      warning(na.nan)
+      return(FALSE)
+    }
+    
+    if(nrow(higher) != 0) {
+      warning("WARNING: Your data seems to contain multiple repetitions. The table should be collapsed before the ANOVA.")
+      #print("")
+      #print(higher)
+    }
   }
   
-  if(nrow(na.nan) != 0) {
-    print("There are NAs or NANs in the table, go and yell at the student. The following conditions contain NAs or NANs:")
-    print("")
-    print(na.nan)
-    return(FALSE)
-  }
-  
-  if(nrow(higher) != 0) {
-    print("WARNING: Your data seems to contain multiple repetitions. The table should be collapsed before the ANOVA. The following conditions contain replicated data:")
-    print("")
-    print(higher)
+  if(!is.null(between.vars)) {
+    between.groupsizes <- data %>% 
+      group_by_at(between.vars) %>% 
+      summarize(n=n()) %>% 
+      select(n) %>% 
+      pull() %>% 
+      unique() %>% 
+      length()
+    
+    between.groupsizes.participant <- data %>% 
+      group_by_at(c(between.vars, participantCol)) %>% 
+      summarize(n=n()) %>% 
+      select(n) %>% 
+      pull() %>% 
+      unique() %>% 
+      length()
+    
+    
+    
+    if(between.groupsizes != 1) {
+      warning("WARNING: Your between-groups are not equal-sized. This might be totally fine, just be sure about what your doing.")
+    }
+    
+    if(between.groupsizes.participant != 1) {
+      warning("WARNING: Your you have (at least) one between groups factor that varies within a participant. This is rather strange.")
+    }
   }
   
   return(TRUE)
@@ -74,4 +105,28 @@ data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun
     )
   
   return(data.sum)
+}
+
+#' @NoRd
+roundp.internal <- function(x, digits = 2) {
+  return(sprintf(paste0("%.", digits, "f"), round(x,digits)))
+}
+
+#' @NoRd
+build_aov_latex.internal <- function(Effect, DFn, DFd, F, p, ges) {
+  
+  print("Effect")
+  
+  F <- roundp(F, digits = 2)
+  #ges <- round(max(0.01,ges), 2)
+  ges <- roundp(ges, digits = 2)
+  
+  
+  sig <- symnum(p, corr=FALSE, na=FALSE,
+                cutpoints = c(0, 0.001, 0.01, 0.05, 1),
+                symbols = c("<.001", "<.01", "<.05", ">.05"))
+  
+  latexString <- paste0("\\anova{", DFn, "}{", DFd, "}{",F,"}{",sig,"}{",ges,"}")
+  
+  return(latexString)
 }

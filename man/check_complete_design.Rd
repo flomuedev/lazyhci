@@ -4,12 +4,20 @@
 \alias{check_complete_design}
 \title{check_complete_design}
 \usage{
-check_complete_design(data, IVs, participantCol, DV)
+check_complete_design(
+  data,
+  within.vars = NULL,
+  between.vars = NULL,
+  participantCol,
+  DV
+)
 }
 \arguments{
 \item{data}{the data}
 
-\item{IVs}{a vector of the names of your IV cols}
+\item{within.vars}{a vector of the names of your within IV cols}
+
+\item{between.vars}{a vector of the names of your between IV cols}
 
 \item{participantCol}{the name of your participant ID col}
 
