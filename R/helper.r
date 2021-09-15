@@ -113,20 +113,29 @@ roundp.internal <- function(x, digits = 2) {
 }
 
 #' @NoRd
-build_aov_latex.internal <- function(Effect, DFn, DFd, F, p, ges) {
+build_aov_latex.internal <- function(DFn, DFd, F, p, ges, gge = NA) {
   
-  print("Effect")
-  
-  F <- roundp(F, digits = 2)
-  #ges <- round(max(0.01,ges), 2)
-  ges <- roundp(ges, digits = 2)
-  
-  
+  F <- roundp.internal(F, digits = 2)
+  ges <- roundp.internal(ges, digits = 2)
   sig <- symnum(p, corr=FALSE, na=FALSE,
                 cutpoints = c(0, 0.001, 0.01, 0.05, 1),
                 symbols = c("<.001", "<.01", "<.05", ">.05"))
   
-  latexString <- paste0("\\anova{", DFn, "}{", DFd, "}{",F,"}{",sig,"}{",ges,"}")
+  if(is.na(gge)) {
+    if(is.numeric(DFn))
+      DFn <- roundp.internal(DFn, digits=0)
+    if(is.numeric(DFd))
+      DFd <- roundp.internal(DFd, digits=0)
+    
+    latexString <- paste0("\anova{", DFn, "}{", DFd, "}{",F,"}{",sig,"}{",ges,"}")
+  } else {
+    gge <- roundp.internal(gge, digits = 2)
+    DFn <- roundp.internal(DFn, digits = 2)
+    DFd <- roundp.internal(DFd, digits = 2)
+      
+    latexString <- paste0("\anovaCor{", DFn, "}{", DFd, "}{",F,"}{",sig,"}{",gge,"}{",ges,"}")
+  }
+  
   
   return(latexString)
 }

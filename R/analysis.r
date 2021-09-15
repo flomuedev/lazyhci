@@ -33,6 +33,43 @@ ano <- function(data, dv, participantCol, within.vars = NULL, between.vars = NUL
   tidy <- broom::tidy(mod.ez$aov)
   mod.ez$Posthoc = list()
   
+  if(!is.null(within.vars)) {
+    tmp <- mod.ez$ANOVA %>% left_join(mod.ez$`Mauchly's Test for Sphericity`, by="Effect") %>% left_join(mod.ez$`Sphericity Corrections`)
+    tmp <- tmp %>% 
+      rowwise() %>% 
+      mutate(
+        DFnCor  = ifelse(is.na(p.y) | p.y > 0.05, DFn, DFn*GGe),
+        DFdCor  = ifelse(is.na(p.y) | p.y > 0.05, DFd, DFd*GGe),
+        pCor    = ifelse(is.na(p.y) | p.y > 0.05, `p.x`, `p[GG]`),
+        pCorSig = ifelse(is.na(p.y) | p.y > 0.05, `p<.05.x`, `p[GG]<.05`),
+        GGeCor  = ifelse(is.na(p.y) | p.y > 0.05, NA, GGe)
+        )
+    
+    anova.cor <- mod.ez$ANOVA
+    anova.cor$DFn <- tmp$DFnCor
+    anova.cor$DFd <- tmp$DFdCor
+    anova.cor$p <- tmp$pCor
+    anova.cor$`p<.05` <- tmp$pCorSig
+    anova.cor$GGe <- tmp$GGeCor
+    
+    anova.cor <- anova.cor %>% 
+      rowwise() %>%
+      mutate(
+        latex = build_aov_latex.internal(DFn, DFd, F, p, ges, GGe)
+      ) %>% 
+      as.data.frame()
+    
+    mod.ez$'ANOVA Corrected' <- anova.cor 
+  }
+  
+  mod.ez$ANOVA <- mod.ez$ANOVA %>% 
+    rowwise() %>%
+    mutate(
+      latex = build_aov_latex.internal(DFn, DFd, F, p, ges)
+    ) %>% 
+    as.data.frame()
+  
+  
   for(row in 1:nrow(tidy)) {
     cur.term <- tidy[row, 2][[1]]
     cur.p <- tidy[row, 7][[1]]
@@ -49,17 +86,15 @@ ano <- function(data, dv, participantCol, within.vars = NULL, between.vars = NUL
         )
       
       data.sum <- data.sum %>%
-        dplyr::mutate(latex=paste0("\\val{", roundp.internal(mean, digits = 2) ,"}{", roundp.internal(sd, digits = 2) ,"}"))
+        dplyr::mutate(latex=paste0("\val{", roundp.internal(mean, digits = 2) ,"}{", roundp.internal(sd, digits = 2) ,"}"))
       
       emm <- emmeans::emmeans(mod.ez$aov, as.formula(cur.formula.str))
       pairs <- pairs(emm,adjust = posthoc.adj)
       
       emm <- as_tibble(emm) %>% 
-        dplyr::mutate(latex=paste0("\\emmCI{", roundp.internal(emmean, digits = 2) ,"}{", roundp.internal(SE, digits = 2) ,"}{", roundp.internal(lower.CL, digits = 2) , "}{", roundp.internal(upper.CL, digits = 2) , "}"))
+        dplyr::mutate(latex=paste0("\valCI{", roundp.internal(emmean, digits = 2) ,"}{", roundp.internal(SE, digits = 2) ,"}{", roundp.internal(lower.CL, digits = 2) , "}{", roundp.internal(upper.CL, digits = 2) , "}"))
       
-      mod.ez$Posthoc[[cur.term]] <- list(descriptives = as.data.frame(data.sum), emm = as.data.frame(emm), contrasts = as.data.frame(pairs))
-      #mod.ez$Posthoc = c(mod.ez$Posthoc, list(list(name = cur.term, descriptives = as.data.frame(data.sum), emm = as.data.frame(emm), contrasts = as.data.frame(pairs))))
-    }
+      mod.ez$Posthoc[[cur.term]] <- list(descriptives = as.data.frame(data.sum), emm = as.data.frame(emm), contrasts = as.data.frame(pairs))    }
   }
   
   return(mod.ez)
