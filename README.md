@@ -13,3 +13,9 @@ todo...
 
 ## Helper
 `check_complete_design` checks for a fully-crossed design for repeated meassures designs. Informs you about missing/NA cells.
+
+## Installing
+```
+library(devtools)
+install_github("flomuedev/summarize")
+```
