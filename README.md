@@ -1,4 +1,4 @@
-# summarize - helper scripts for lazy researchers
+# lazyhci - helper scripts for lazy researchers
 This package is a compilation of functions written over the years for fast and easy exploration of data gathered in scientific experiments. The methods can support you in the areas of plotting and analysis.
 
 ## Plotting
