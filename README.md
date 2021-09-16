@@ -22,5 +22,5 @@ todo...
 ## Installing
 ```
 library(devtools)
-install_github("flomuedev/summarize")
+install_github("flomuedev/lazyhci")
 ```
