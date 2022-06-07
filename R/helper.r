@@ -95,13 +95,13 @@ check_complete_design <- function(data, within.vars = NULL, between.vars = NULL,
 }
 
 #' @NoRd
-data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun.error = sd){
+data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun.error = sd, na.rm = FALSE){
 
   data.sum <- data %>% 
     dplyr::group_by_at(groupnames) %>%
     dplyr::summarise(
-      mean = fun.sum(!!as.name(varname)),
-      error = fun.error(!!as.name(varname))
+      mean = fun.sum(!!as.name(varname), na.rm = na.rm),
+      error = fun.error(!!as.name(varname), na.rm = na.rm)
     )
   
   return(data.sum)

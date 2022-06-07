@@ -11,8 +11,9 @@
 #' @param fun.sum (optional) the summary function to use. Defaults to mean.
 #' @param fun.error (optional) the error function to use. Defaults to sd.
 #' @param p.scale_fill_manual (optional) a color scale for the plot
+#' @param na.rm if nas shoudl be removed before plotting
 #' @export
-data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), prefix = "plot", p.width = NULL, p.height = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL) {
+data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), prefix = "plot", p.width = NULL, p.height = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
 
   dir.create(outdir, showWarnings = FALSE)
 
@@ -23,7 +24,7 @@ data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path
     if(any(length(set) < 1 | length(set) > 4) ) {
       #message("Sorry, I don't know how to handle the set.")
     } else {
-      data_summary_plot_multiple(data = data, varnames = varnames, groupnames = set, outdir = outdir, p.width = p.width, p.height = p.height, prefix = prefix, fun.sum = fun.sum, fun.error = fun.error, scale_fill_manual = scale_fill_manual)
+      data_summary_plot_multiple(data = data, varnames = varnames, groupnames = set, outdir = outdir, p.width = p.width, p.height = p.height, prefix = prefix, fun.sum = fun.sum, fun.error = fun.error, scale_fill_manual = scale_fill_manual, na.rm = na.rm)
       #data_summary_plot_multiple(data, varnames, set, outdir, prefix, p.width, p.height, fun.sum, fun.error, scale_fill_manual)
     }
   }
@@ -51,8 +52,9 @@ data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path
 #' @param fun.sum (optional) the summary function to use. Defaults to mean.
 #' @param fun.error (optional) the error function to use. Defaults to sd.
 #' @param p.scale_fill_manual (optional) a color scale for the plot
+#' @param na.rm (default = false) if nas should be removed before plotting
 #' @export
-data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), p.width = NULL, p.height = NULL, prefix = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL) {
+data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), p.width = NULL, p.height = NULL, prefix = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
 
   groupingString <- paste("_by", paste(groupnames, collapse="_"), sep="_")
 
@@ -66,7 +68,7 @@ data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file
       title <- paste(prefix, "_", varname_fixed, groupingString, sep="")
     }
 
-    p <- data_summary_plot(data = data, DV = varname, groupnames = groupnames, fun.sum = fun.sum, fun.error = fun.error, p.scale_fill_manual = scale_fill_manual, p.title = title)
+    p <- data_summary_plot(data = data, DV = varname, groupnames = groupnames, fun.sum = fun.sum, fun.error = fun.error, p.scale_fill_manual = scale_fill_manual, p.title = title, na.rm = na.rm)
 
     filename = paste(title, ".pdf", sep="")
     outPath = file.path(outdir, filename)
@@ -92,15 +94,16 @@ data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file
 #' @param p.title (optinal) a title
 #' @param theme.fontfamily (optional) a font for your plot. Must be registered using extrafont.
 #' @param theme.fontfamily.device (optional) the device for extrafont. Defaults to win.
+#' @param na.rm (default = false) if NAs should be removed before plotting
 #' @export
-data_summary_plot <- function(data, DV, groupnames, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win"){
+data_summary_plot <- function(data, DV, groupnames, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE){
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
   if(any(length(groupnames) < 1 | length(groupnames) > 4) )
     stop('Sorry, only 1-4 grouping variables supported')
 
-  data.plot <- data_summary.internal(data, DV, groupnames, fun.sum, fun.error)
+  data.plot <- data_summary.internal(data, DV, groupnames, fun.sum, fun.error, na.rm = na.rm)
 
   p<- NULL
 

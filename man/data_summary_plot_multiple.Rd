@@ -14,7 +14,8 @@ data_summary_plot_multiple(
   prefix = NULL,
   fun.sum = mean,
   fun.error = sd,
-  scale_fill_manual = NULL
+  scale_fill_manual = NULL,
+  na.rm = FALSE
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ data_summary_plot_multiple(
 \item{fun.sum}{(optional) the summary function to use. Defaults to mean.}
 
 \item{fun.error}{(optional) the error function to use. Defaults to sd.}
+
+\item{na.rm}{(default = false) if nas should be removed before plotting}
 
 \item{p.scale_fill_manual}{(optional) a color scale for the plot}
 }

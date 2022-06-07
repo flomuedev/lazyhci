@@ -14,7 +14,8 @@ data_summary_plot(
   p.basesize = 10,
   p.title = NULL,
   theme.fontfamily = NULL,
-  theme.fontfamily.device = "win"
+  theme.fontfamily.device = "win",
+  na.rm = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ data_summary_plot(
 \item{theme.fontfamily}{(optional) a font for your plot. Must be registered using extrafont.}
 
 \item{theme.fontfamily.device}{(optional) the device for extrafont. Defaults to win.}
+
+\item{na.rm}{(default = false) if NAs should be removed before plotting}
 }
 \description{
 This function produces a summary plot of your data
