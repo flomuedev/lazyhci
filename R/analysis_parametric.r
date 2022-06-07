@@ -1,6 +1,6 @@
-#' ano
+#' aov_analysis
 #'
-#' Perform an (RM) anova analysis using ezANOVA including asusmption checks and post-hoc tests
+#' Perform (RM) anova analysis using ezANOVA including asusmption checks and post-hoc tests
 #' @param data the data
 #' @param dv the name of the column containing the DV
 #' @param participantCol the column containing an identifier for the participant
@@ -11,7 +11,7 @@
 #' @param normality.test (optional) the normality test function to use. Defaults to shapiro.test
 #' @param latex.digits.round (optional) round the latex output to x digits. Defaults to 2.
 #' @export
-ano <- function(data, dv, participantCol, within.vars = NULL, between.vars = NULL, posthoc.adj="bonferroni", anova.type = 2, normality.test = shapiro.test, latex.digits.round = 2) {
+aov_analysis <- function(data, dv, participantCol, within.vars = NULL, between.vars = NULL, posthoc.adj="bonferroni", anova.type = 2, normality.test = shapiro.test, latex.digits.round = 2) {
   options(contrasts = c("contr.sum", "contr.poly"))
   data.aov <- data
   
