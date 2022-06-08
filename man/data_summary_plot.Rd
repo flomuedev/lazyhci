@@ -7,7 +7,7 @@
 data_summary_plot(
   data,
   DV,
-  groupnames,
+  IVs,
   fun.sum = mean,
   fun.error = sd,
   p.scale_fill_manual = NULL,
@@ -23,7 +23,7 @@ data_summary_plot(
 
 \item{DV}{the name of the column containing the dependent variable}
 
-\item{groupnames}{a vector of the names of the grouping variables}
+\item{IVs}{a vector of the names of the grouping variables}
 
 \item{fun.sum}{(optional) the summary function to use. Defaults to mean.}
 

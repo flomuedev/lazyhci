@@ -6,7 +6,7 @@
 \usage{
 plot_likert(
   likert.model,
-  title,
+  title = "",
   yblank = FALSE,
   ordered = FALSE,
   colorscale = NULL,

@@ -6,8 +6,8 @@
 \usage{
 data_summary_plot_multiple(
   data,
-  varnames,
-  groupnames,
+  DVs,
+  IVs,
   outdir = file.path(getwd(), "plots"),
   p.width = NULL,
   p.height = NULL,
@@ -21,9 +21,9 @@ data_summary_plot_multiple(
 \arguments{
 \item{data}{the data}
 
-\item{varnames}{vector containing the names of the columns with the dependent variables}
+\item{DVs}{vector containing the names of the columns with the dependent variables}
 
-\item{groupnames}{a vector of the names of the grouping variables}
+\item{IVs}{a vector of the names of the grouping variables}
 
 \item{outdir}{a file.path pointing to the directory to save the plots}
 

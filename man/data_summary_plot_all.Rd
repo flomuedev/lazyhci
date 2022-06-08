@@ -6,8 +6,8 @@
 \usage{
 data_summary_plot_all(
   data,
-  varnames,
-  groupnames,
+  DVs,
+  IVs,
   outdir = file.path(getwd(), "plots"),
   prefix = "plot",
   p.width = NULL,
@@ -21,9 +21,9 @@ data_summary_plot_all(
 \arguments{
 \item{data}{the data}
 
-\item{varnames}{vector containing the names of the columns with the dependent variables}
+\item{DVs}{vector containing the names of the columns with the dependent variables}
 
-\item{groupnames}{a vector of the names of the grouping variables}
+\item{IVs}{a vector of the names of the grouping variables}
 
 \item{outdir}{(optional) a file.path pointing to the directory to save the plots. Defaults to 'plots' within the current working dir.}
 

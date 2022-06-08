@@ -2,8 +2,8 @@
 #'
 #' This function produces summary plots of multiple dependent variables given a fixed set of grouping variables
 #' @param data the data
-#' @param varnames vector containing the names of the columns with the dependent variables
-#' @param groupnames a vector of the names of the grouping variables
+#' @param DVs vector containing the names of the columns with the dependent variables
+#' @param IVs a vector of the names of the grouping variables
 #' @param outdir (optional) a file.path pointing to the directory to save the plots. Defaults to 'plots' within the current working dir.
 #' @param prefix (optional) a string to prefix the file names of the plots. Defaults to 'plot'
 #' @param p.width (optional) the width of the plot
@@ -13,18 +13,18 @@
 #' @param p.scale_fill_manual (optional) a color scale for the plot
 #' @param na.rm if nas shoudl be removed before plotting
 #' @export
-data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), prefix = "plot", p.width = NULL, p.height = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
+data_summary_plot_all <- function(data, DVs, IVs, outdir = file.path(getwd(), "plots"), prefix = "plot", p.width = NULL, p.height = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
 
   dir.create(outdir, showWarnings = FALSE)
 
-  groupnames.sets <- sets::set_power(groupnames)
+  groupnames.sets <- sets::set_power(IVs)
 
   for(set in groupnames.sets) {
     set <- unlist(set)
     if(any(length(set) < 1 | length(set) > 4) ) {
       #message("Sorry, I don't know how to handle the set.")
     } else {
-      data_summary_plot_multiple(data = data, varnames = varnames, groupnames = set, outdir = outdir, p.width = p.width, p.height = p.height, prefix = prefix, fun.sum = fun.sum, fun.error = fun.error, scale_fill_manual = scale_fill_manual, na.rm = na.rm)
+      data_summary_plot_multiple(data = data, DVs = DVs, IVs = set, outdir = outdir, p.width = p.width, p.height = p.height, prefix = prefix, fun.sum = fun.sum, fun.error = fun.error, scale_fill_manual = scale_fill_manual, na.rm = na.rm)
       #data_summary_plot_multiple(data, varnames, set, outdir, prefix, p.width, p.height, fun.sum, fun.error, scale_fill_manual)
     }
   }
@@ -43,8 +43,8 @@ data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path
 #'
 #' This function produces summary plots of multiple dependent variables given a fixed set of grouping variables
 #' @param data the data
-#' @param varnames vector containing the names of the columns with the dependent variables
-#' @param groupnames a vector of the names of the grouping variables
+#' @param DVs vector containing the names of the columns with the dependent variables
+#' @param IVs a vector of the names of the grouping variables
 #' @param outdir a file.path pointing to the directory to save the plots
 #' @param p.width (optional) the width of the plot
 #' @param p.height (optional) the height of the plot
@@ -54,13 +54,13 @@ data_summary_plot_all <- function(data, varnames, groupnames, outdir = file.path
 #' @param p.scale_fill_manual (optional) a color scale for the plot
 #' @param na.rm (default = false) if nas should be removed before plotting
 #' @export
-data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file.path(getwd(), "plots"), p.width = NULL, p.height = NULL, prefix = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
+data_summary_plot_multiple <- function(data, DVs, IVs, outdir = file.path(getwd(), "plots"), p.width = NULL, p.height = NULL, prefix = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
 
-  groupingString <- paste("_by", paste(groupnames, collapse="_"), sep="_")
+  groupingString <- paste("_by", paste(IVs, collapse="_"), sep="_")
 
   dir.create(outdir, showWarnings = FALSE)
 
-  for(varname in varnames) {
+  for(varname in DVs) {
     varname_fixed <- str_replace_all(varname, "[!^[:punct:]]", "")
     if(is.null(prefix)) {
       title <- paste(varname_fixed, groupingString, sep="")
@@ -68,7 +68,7 @@ data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file
       title <- paste(prefix, "_", varname_fixed, groupingString, sep="")
     }
 
-    p <- data_summary_plot(data = data, DV = varname, groupnames = groupnames, fun.sum = fun.sum, fun.error = fun.error, p.scale_fill_manual = scale_fill_manual, p.title = title, na.rm = na.rm)
+    p <- data_summary_plot(data = data, DV = varname, IVs = IVs, fun.sum = fun.sum, fun.error = fun.error, p.scale_fill_manual = scale_fill_manual, p.title = title, na.rm = na.rm)
 
     filename = paste(title, ".pdf", sep="")
     outPath = file.path(outdir, filename)
@@ -86,7 +86,7 @@ data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file
 #' This function produces a summary plot of your data
 #' @param data the data
 #' @param DV the name of the column containing the dependent variable
-#' @param groupnames a vector of the names of the grouping variables
+#' @param IVs a vector of the names of the grouping variables
 #' @param fun.sum (optional) the summary function to use. Defaults to mean.
 #' @param fun.error (optional) the error function to use. Defaults to sd.
 #' @param p.scale_fill_manual (optional) a color scale for the plot
@@ -96,21 +96,29 @@ data_summary_plot_multiple <- function(data, varnames, groupnames, outdir = file
 #' @param theme.fontfamily.device (optional) the device for extrafont. Defaults to win.
 #' @param na.rm (default = false) if NAs should be removed before plotting
 #' @export
-data_summary_plot <- function(data, DV, groupnames, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE){
+data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE){
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
-  if(any(length(groupnames) < 1 | length(groupnames) > 4) )
+  if(any(length(IVs) < 1 | length(IVs) > 4) )
     stop('Sorry, only 1-4 grouping variables supported')
 
-  data.plot <- data_summary.internal(data, DV, groupnames, fun.sum, fun.error, na.rm = na.rm)
+  IVs.pretty <- IVs
+  DV.pretty <- DV
+
+  data <- fix_col_names(data)
+  IVs <- fix_strings(IVs)
+  DV <- fix_strings(DV)
+
+  data.plot <- data_summary.internal(data, DV, IVs, fun.sum, fun.error, na.rm = na.rm)
 
   p<- NULL
 
-  if(length(groupnames) == 1)
-    p<- ggplot(data.plot, aes_string(x=groupnames[1], y="mean", fill=groupnames[1]))
+  if(length(IVs) == 1)
+    p<- ggplot(data.plot, aes_string(x=IVs[1], y="mean", fill=IVs[1])) + xlab(IVs.pretty[1])
+
   else
-    p<- ggplot(data.plot, aes_string(x=groupnames[1], y="mean", fill=groupnames[2]))
+    p<- ggplot(data.plot, aes_string(x=IVs[1], y="mean", fill=IVs[2])) + xlab(IVs.pretty[1]) + labs(fill = IVs.pretty[2])
 
   if(!is.null(p.scale_fill_manual))
     p <- p + scale_fill_manual(values = p.scale_fill_manual)
@@ -119,15 +127,15 @@ data_summary_plot <- function(data, DV, groupnames, fun.sum = mean, fun.error = 
                     position=position_dodge()) +
     geom_errorbar(aes(ymin=mean-error, ymax=mean+error), width=.2,
                   position=position_dodge(.9))  +
-    ylab(DV)
+    ylab(DV.pretty)
 
 
-  if(length(groupnames) == 3) {
-    p <- p + facet_wrap(as.formula(paste("~", groupnames[3])))
+  if(length(IVs) == 3) {
+    p <- p + facet_wrap(as.formula(paste("~", IVs[3])))
   }
 
-  if(length(groupnames) == 4) {
-    p <- p + facet_grid(as.formula(paste(groupnames[3], "~", groupnames[4], sep=" ")))
+  if(length(IVs) == 4) {
+    p <- p + facet_grid(as.formula(paste(IVs[3], "~", IVs[4], sep=" ")))
 
   }
 
@@ -261,7 +269,7 @@ likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, dr
 #' @seealso \code{\link{likert_plot_model}}
 #'
 #' @export
-plot_likert <- function(likert.model, title, yblank=FALSE, ordered = FALSE, colorscale=NULL, p.basesize = 19, percentagelabel = FALSE, theme.fontfamily = NULL, theme.fontfamily.device = "win") {
+plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE, colorscale=NULL, p.basesize = 19, percentagelabel = FALSE, theme.fontfamily = NULL, theme.fontfamily.device = "win") {
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
