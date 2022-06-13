@@ -14,10 +14,13 @@
 #' @param na.rm if nas shoudl be removed before plotting
 #' @export
 data_summary_plot_all <- function(data, DVs, IVs, outdir = file.path(getwd(), "plots"), prefix = "plot", p.width = NULL, p.height = NULL, fun.sum = mean, fun.error = sd, scale_fill_manual = NULL, na.rm = FALSE) {
+  require(sets)
 
   dir.create(outdir, showWarnings = FALSE)
 
   groupnames.sets <- sets::set_power(IVs)
+
+  if("package:sets" %in% search()) detach("package:sets", unload=TRUE)
 
   for(set in groupnames.sets) {
     set <- unlist(set)
@@ -97,6 +100,7 @@ data_summary_plot_multiple <- function(data, DVs, IVs, outdir = file.path(getwd(
 #' @param na.rm (default = false) if NAs should be removed before plotting
 #' @export
 data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE){
+  require(ggplot2)
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
@@ -270,6 +274,7 @@ likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, dr
 #'
 #' @export
 plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE, colorscale=NULL, p.basesize = 19, percentagelabel = FALSE, theme.fontfamily = NULL, theme.fontfamily.device = "win") {
+  require(ggplot2)
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
@@ -299,7 +304,7 @@ plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE,
 
 
 
-#' @NoRd
+#' @noRd
 ensure_font_support.internal <- function(fontfamily, device="win") {
   require(extrafont)
 

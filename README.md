@@ -12,12 +12,16 @@ This package is a compilation of functions written over the years for fast and e
 
 `data_summary_plot_all` produces summary plots for multiple dependent variables, automatically grouping by all subsets of the grouping (independent) variables.
 
+`likert_plot_model` produces a model using the `likert` package that can be plotted.
+
+`plot_likert` customizes plotting options for models produced by `likert_plot_model`
+
 ## Analysis
 
 todo...
 
 ## Helper
-`check_complete_design` checks for a fully-crossed design for repeated meassures designs. Informs you about missing/NA cells.
+`check_complete_design` checks for a fully-crossed design for repeated meassures designs. Informs you about missing/NA cells and other problems.
 
 ## Installing
 ```

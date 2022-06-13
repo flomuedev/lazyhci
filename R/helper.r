@@ -63,6 +63,7 @@ set_col_type <- function(x, cols, coltype = c("numeric", "character", "factor"))
 #' @param DV the name of the dependent variable column
 #' @export
 check_complete_design <- function(data, within.vars = NULL, between.vars = NULL, participantCol, DV) {
+  require(dplyr)
 
   if(!is.null(within.vars)) {
     data.sum <- data %>%
@@ -79,26 +80,22 @@ check_complete_design <- function(data, within.vars = NULL, between.vars = NULL,
       filter(n > 1)
 
     na.nan <- data.sum %>%
-      filter(is.na(val) || is.nan(val))
+      filter(is.na(val) | is.nan(val))
 
     if(nrow(missing) != 0) {
       warning("This is not a complete design, go and yell at the student. The following condition data is missing:")
-      warning("")
-      warning(as.data.frame(missing))
+      warning(paste0(capture.output(as.data.frame(missing)), collapse = "\n"))
       return(FALSE)
     }
 
     if(nrow(na.nan) != 0) {
       warning("There are NAs or NANs in the table, go and yell at the student. The following conditions contain NAs or NANs:")
-      warning("")
-      warning(na.nan)
+      warning(paste0(capture.output(as.data.frame(na.nan)), collapse = "\n"))
       return(FALSE)
     }
 
     if(nrow(higher) != 0) {
-      warning("WARNING: Your data seems to contain multiple repetitions. The table should be collapsed before the ANOVA.")
-      #print("")
-      #print(higher)
+      warning("WARNING: Your data seems to contain multiple repetitions (or you have not provided all IVs). The table should be collapsed before the ANOVA.")
     }
   }
 
@@ -133,8 +130,9 @@ check_complete_design <- function(data, within.vars = NULL, between.vars = NULL,
   return(TRUE)
 }
 
-#' @NoRd
+#' @noRd
 data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun.error = sd, na.rm = FALSE){
+  require(dplyr)
 
   data.sum <- data %>%
     dplyr::group_by_at(groupnames) %>%
@@ -146,12 +144,12 @@ data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun
   return(data.sum)
 }
 
-#' @NoRd
+#' @noRd
 roundp.internal <- function(x, digits = 2) {
   return(sprintf(paste0("%.", digits, "f"), round(x,digits)))
 }
 
-#' @NoRd
+#' @noRd
 build_aov_latex.internal <- function(DFn, DFd, F, p, ges, gge = NA) {
 
   F <- roundp.internal(F, digits = 2)

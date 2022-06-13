@@ -6,7 +6,7 @@
 \usage{
 aov_analysis(
   data,
-  dv,
+  DV,
   participantCol,
   within.vars = NULL,
   between.vars = NULL,
@@ -19,7 +19,7 @@ aov_analysis(
 \arguments{
 \item{data}{the data}
 
-\item{dv}{the name of the column containing the DV}
+\item{DV}{the name of the column containing the DV}
 
 \item{participantCol}{the column containing an identifier for the participant}
 
