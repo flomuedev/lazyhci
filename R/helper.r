@@ -33,6 +33,8 @@ fix_col_names <- function(x) {
 fix_strings <- function(x) {
   #require(stringr)
   #return(str_replace_all(x, c(" " = "." , "," = "" )))
+  if(is.null(x))
+    return(NULL)
   return(make.names(x, unique=TRUE))
 }
 

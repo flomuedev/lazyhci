@@ -35,7 +35,7 @@ aov_analysis <- function(data, DV, participantCol, within.vars = NULL, between.v
   tidy <- broom::tidy(mod.ez$aov)
   mod.ez$Posthoc = list()
 
-  if(!is.null(within.vars)) {
+  if(!is.null(within.vars) & anova.type > 1) {
     tmp <- mod.ez$ANOVA %>% left_join(mod.ez$`Mauchly's Test for Sphericity`, by="Effect") %>% left_join(mod.ez$`Sphericity Corrections`)
     tmp <- tmp %>%
       rowwise() %>%
