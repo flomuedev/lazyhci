@@ -14,6 +14,30 @@ se <- function(x, na.rm=FALSE) {
   return(sd(x, na.rm=na.rm)/sqrt(ifelse(na.rm, length(x[!is.na(x)]), length(x))))
 }
 
+#' wtf_is
+#'
+#' Reports details about the supplied object
+#' @param x The objectö
+#' @export
+wtf_is <- function(x) {
+  # For when you have no idea what something is.
+  # https://stackoverflow.com/questions/8855589
+  cat("1. typeof():\n")
+  print(typeof(x))
+  cat("\n2. class():\n")
+  print(class(x))
+  cat("\n3. mode():\n")
+  print(mode(x))
+  cat("\n4. names():\n")
+  print(names(x))
+  cat("\n5. slotNames():\n")
+  print(slotNames(x))
+  cat("\n6. attributes():\n")
+  print(attributes(x))
+  cat("\n7. str():\n")
+  print(str(x))
+}
+
 #' fix_col_names
 #'
 #' Removes spaces and comma from column names
@@ -38,21 +62,50 @@ fix_strings <- function(x) {
   return(make.names(x, unique=TRUE))
 }
 
-#' set_col_type
+#' import_google_form
 #'
-#' Batch-sets column names
+#' Imports data from google forms (sheets). Expects study data to be in a specific format:
+#'
+#' 0:n pre questions (demographics etc.)
+#' 0:n questions per condition for 0:n conditions
+#' 0:n post study questions
+#'
+#' @param url the spredsheet url
+#' @param pre_questions the number of pre question columns
+#' @param post_questions the number of post question columns
+#' @param nr_of_conditions the number of conditions
+#' @param participant_column the column number containing the participant id.
+#'
 #' @param x The data
-#' @param cols a vector of col numbers
-#' @param coltype one of 'numeric', 'character' 'factor'
 #' @export
-set_col_type <- function(x, cols, coltype = c("numeric", "character", "factor")) {
-  require(rlang)
-  rlang::arg_match(coltype)
+import_google_form <- function(url, pre_questions, post_questions, nr_of_conditions, participant_column) {
+  require(tidyverse)
+  require(googlesheets4)
+  require(janitor)
 
-  for(col in cols) {
-    x[col] <- fun.conv(x[col])
+
+  data.raw <- googlesheets4::read_sheet(url) %>% janitor::clean_names()
+
+  data.pre <- data.raw %>% select(1:all_of(pre_questions))
+  data.post <- data.raw %>% select(all_of(participant_column), (ncol(data.raw) - all_of(post_questions) + 1):ncol(data.raw))
+  questions_per_condition <- (ncol(data.raw) - pre_questions - post_questions) / nr_of_conditions
+
+  data.main <- NULL
+
+  for(condition in 1:nr_of_conditions) {
+    start <- 1 + (condition - 1) * questions_per_condition + pre_questions
+    end <- condition * questions_per_condition + pre_questions
+
+    data.tmp <- data.raw %>% select(all_of(participant_column), start:end)
+
+    if(!is.null(data.main)) {
+      names(data.tmp) <- names(data.main)
+    }
+
+    data.main <- rbind(data.main, data.tmp)
   }
-  return(x)
+
+  return(list("pre" = data.pre, "main" = data.main, "post" = data.post))
 }
 
 #' check_complete_design

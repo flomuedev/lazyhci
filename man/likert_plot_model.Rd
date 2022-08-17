@@ -11,7 +11,8 @@ likert_plot_model(
   participantCol,
   grouping = NULL,
   drop = NULL,
-  survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual"),
+  survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual",
+    "as_is"),
   survey_vector_manual = NULL
 )
 }
@@ -28,7 +29,7 @@ likert_plot_model(
 
 \item{drop}{(optional) one or more of the IVs that should be dropped before plotting.}
 
-\item{survey_vector}{one of auto, likert-4, likert-5,likert-6, likert-7 or manual. If manual, you need to pass a survey_vector_manual}
+\item{survey_vector}{one of auto, likert-4, likert-5,likert-6, likert-7, as_is, or manual. If manual, you need to pass a survey_vector_manual}
 
 \item{survey_vector_manual}{if 'survey_vector' is 'manual', pass a fitting survey vector here}
 }

@@ -166,13 +166,13 @@ data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.s
 #' @param participantCol the name of the column containing the participant ID
 #' @param grouping (optional) one or more grouping IVs
 #' @param drop (optional) one or more of the IVs that should be dropped before plotting.
-#' @param survey_vector one of auto, likert-4, likert-5,likert-6, likert-7 or manual. If manual, you need to pass a survey_vector_manual
+#' @param survey_vector one of auto, likert-4, likert-5,likert-6, likert-7, as_is, or manual. If manual, you need to pass a survey_vector_manual
 #' @param survey_vector_manual if 'survey_vector' is 'manual', pass a fitting survey vector here
 #'
 #' @seealso \code{\link{plot_likert}}
 #'
 #' @export
-likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, drop = NULL, survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual"), survey_vector_manual = NULL) {
+likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, drop = NULL, survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual", "as_is"), survey_vector_manual = NULL) {
   require(likert)
   require(rlang)
   require(reshape2)
@@ -182,6 +182,13 @@ likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, dr
   data.plot$P <- data.plot[,participantCol]
 
   survey_vector <- rlang::arg_match(survey_vector)
+
+  if(survey_vector == "as_is") {
+    survey_vector <- "manual"
+    survey_vector_manual <- levels(as.factor(data.plot$Q))
+
+    print(paste("WARNING: Using ", survey_vector_manual, " as survey_vector for as_is. Please override if the order is not correct.", sep=""))
+  }
 
   if(survey_vector == "auto") {
 
@@ -302,6 +309,79 @@ plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE,
   return(p)
 }
 
+#only use if you know what your doing
+#' grid_arrange_caption
+#'
+#' Arranges the caption when doing multiple plots in one figure. Not finished, use at own risk.
+#' @param nrow (optional) number of rows (defaults to 1)
+#' @param position (optional) position of the legend, defaults to bottom
+#'
+#' @export
+grid_arrange_caption <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
+  require(grid)
+  require(gridExtra)
+
+  plots <- list(...)
+  captions <- c()
+
+  for(plot in plots) {
+    tmp <- ggplot_gtable(ggplot_build(plot))$grobs
+    caption <- tmp[grep("caption", sapply(tmp, function(x) x$name))]
+    captions <- append(captions, caption)
+  }
+
+  cheight <- sum(captions[[1]]$height)
+
+  gl <- lapply(plots, function(x) x + theme(plot.caption = element_blank()))
+
+  p.comb <- grid_arrange_shared_legend(gl, ncol = ncol, nrow = nrow, position = position)
+
+  grid.arrange(p.comb, arrangeGrob(captions[[1]], captions[[2]], ncol=2), ncol = 1,  heights = unit.c(unit(1, "npc") - cheight, cheight))
+}
+
+#' grid_arrange_shared_legend
+#'
+#' Arranges multiple ggplot grobs in one plot
+#' @param nrow (optional) number of rows (defaults to 1)
+#' @param position (optional) position of the legend, defaults to bottom
+#'
+#' @export
+grid_arrange_shared_legend <- function(..., ncol = length(list(...)), nrow = 1, position = c("bottom", "right")) {
+
+  require(grid)
+  require(gridExtra)
+
+  plots <- list(...)
+
+  if(length(plots) == 1 & class(plots) == "list") {
+    plots = plots[[1]]
+  }
+
+  position <- match.arg(position)
+  g <- ggplotGrob(plots[[1]] + guides(colour = guide_legend(nrow = 1)) + theme(legend.position = position))$grobs
+  legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+  lheight <- sum(legend$height)
+  lwidth <- sum(legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth)))
+
+  grid.newpage()
+  grid.draw(combined)
+
+  # return gtable invisibly
+  invisible(combined)
+
+}
 
 
 #' @noRd
