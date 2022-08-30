@@ -128,9 +128,9 @@ data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.s
     p <- p + scale_fill_manual(values = p.scale_fill_manual)
 
   p <- p + geom_bar(stat="identity",
-                    position=position_dodge2(preserve = "single")) +
+                    position=position_dodge(preserve = "single")) +
     geom_errorbar(aes(ymin=mean-error, ymax=mean+error), width = 0.2,
-                  position = position_dodge2(width = 0.2, padding = 0.8, preserve = "single"))  +
+                  position = position_dodge(width = 0.9, preserve = "single"))  +
     ylab(DV.pretty)
 
 
