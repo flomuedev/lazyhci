@@ -108,6 +108,50 @@ import_google_form <- function(url, pre_questions, post_questions, nr_of_conditi
   return(list("pre" = data.pre, "main" = data.main, "post" = data.post))
 }
 
+#' descriptives
+#'
+#' calculate descriptives for all subsets
+#'
+#'
+#' @param data the data
+#' @param DV the dependent variable
+#' @param IVs a list of independent variables
+#'
+#' @export
+descriptives <- function(data, DV, IVs) {
+  require(tidyverse)
+  require(sets)
+
+  groupnames.sets <- as.list(sets::set_power(IVs))
+  groupnames.sets <- groupnames.sets[lapply(groupnames.sets,length)>0]
+
+  if("package:sets" %in% search()) detach("package:sets", unload=TRUE) # sets is evil.
+
+  result <- list()
+
+  for(set in groupnames.sets) {
+    vars <- as.list(set)
+    name = paste(vars, collapse ="_x_")
+
+    tmp <- data %>%
+      group_by(across(all_of(unlist(vars)))) %>%
+      summarize(n = n(),
+                mean = mean(!!as.name(DV)),
+                sd=sd(!!as.name(DV)),
+                se=se(!!as.name(DV)),
+                min=min(!!as.name(DV)),
+                max=max(!!as.name(DV)),
+                median=median(!!as.name(DV)),
+                Q1=quantile(!!as.name(DV))[2],
+                Q3=quantile(!!as.name(DV))[4],
+      )
+
+    result[[name]] <- tmp
+  }
+
+  return(result)
+}
+
 #' check_complete_design
 #'
 #' This function checks if the data is complete for your design for one DV
