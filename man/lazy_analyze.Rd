@@ -10,10 +10,11 @@ lazy_analyze(
   DV,
   within.vars = NULL,
   between.vars = NULL,
-  analysis_type = c("aov", "art"),
+  analysis_type = c("aov", "art", "lme", "glme", "friedman"),
   posthoc.adj = "bonf",
   anova.type = 3,
-  transformation = NULL
+  transformation = NULL,
+  family = c("poisson", "binominal")
 )
 }
 \arguments{
@@ -27,7 +28,7 @@ lazy_analyze(
 
 \item{between.vars}{(optional) a list of between-subject variables}
 
-\item{analysis_type}{one of "aov" or "art".}
+\item{analysis_type}{one of "aov", "art", "friedman", "lme", "glme".}
 
 \item{posthoc.adj}{the adjustment method for post-hoc tests. Defaults to "bonferroni"}
 

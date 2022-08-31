@@ -6,13 +6,13 @@
 #' @param DV the column name of the dependent variable
 #' @param within.vars (optional) a list of within-subject variables
 #' @param between.vars (optional) a list of between-subject variables
-#' @param analysis_type one of "aov" or "art".
+#' @param analysis_type one of "aov", "art", "friedman", "lme", "glme".
 #' @param posthoc.adj the adjustment method for post-hoc tests. Defaults to "bonferroni"
 #' @param anova.type the type of anova test to perform. Defaults to 3
 #' @param transformation (optional) a transformation that should be applied to the data before the test.
 #'
 #' @export
-lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type=c("aov", "art"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL) {
+lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c("poisson", "binominal")) {
   require(janitor)
 
   if(!hasArg(analysis_type))
@@ -52,6 +52,35 @@ lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars 
     model$anova$eta.sq <- with(model$anova, `Sum Sq`/(`Sum Sq` + `Sum Sq.res`))
     result[["model"]] <- model
     result[["post_hoc"]] <- do.post_hoc.internal(model$m.lme, model$anova$Term, posthoc.adj, fct_contrasts = post_hoc.art.internal, fct_ip = interaction_plot.art.internal)
+  }
+
+  if(analysis_type == "lme" || analysis_type == "glme") {
+    model <- lmer.fit.inernal(data = data.clean, DV = DV.clean, participant = participant.clean, within.vars = within.vars.clean, between.vars = between.vars.clean, analysis_type = analysis_type, glme.family = family)
+    result[["anova"]] <-  car::Anova(model, type=anova.type)
+    result[["model"]] <- model
+    result[["post_hoc"]] <- do.post_hoc.internal(model, rownames(result[["anova"]][!(row.names(result[["anova"]]) %in% c("(Intercept)")), ]), posthoc.adj, fct_contrasts = post_hoc.internal, fct_ip = interaction_plot.aov.internal)
+  }
+
+  print(length(within.vars.clean) == 1)
+  print(length(between.vars.clean) == 0)
+
+
+
+  if(analysis_type == "friedman") {
+    require(PMCMRplus)
+
+    if(!((length(within.vars.clean) == 1) && (length(between.vars.clean) == 0))) {
+      stop("friedman analysis only appllies to one within and zero between vars .")
+    }
+
+    #friedman.test(x ~ w | t, data = wb)
+
+    friedman <- friedman.test(as.formula(paste0(DV.clean, " ~ ", within.vars.clean[[1]], " | ", participant.clean)), data = data.clean)
+    post_hoc_friedman <- PMCMRplus::frdAllPairsConoverTest(y = data.clean[[DV.clean]], groups = data.clean[[within.vars.clean[[1]]]],
+                                         blocks = data.clean[[participant.clean]], p.adjust.method = posthoc.adj)
+
+    result[["friedman"]] <- friedman
+    result[["post_hoc"]] <- post_hoc_friedman
   }
 
 
@@ -104,6 +133,36 @@ post_hoc.internal <- function(model, factors, posthoc.adj = "bonf", collapse=":"
   result <- emmeans(model, list(as.formula(form_string_emm)), adjust = "bonf")
 
   return(result)
+}
+
+lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type, anova.type = 3, glme.family = NULL) {
+  require(lme4)
+  library(car)
+  library(emmeans)
+
+  if(analysis_type == "glme" && !hasArg(analysis_type))
+    stop("glme requires the family argument.")
+
+  formula.string <- paste(
+    DV,
+    " ~ ",
+    "(",
+    paste(c(within.vars, between.vars), collapse ="*"),
+    ")",
+    " + ",
+    "(1|",
+    participant,
+    ")",
+    sep=""
+  )
+
+  if(analysis_type == "lme")
+    model <- lme4::lmer(as.formula(formula.string), data=data)
+
+  if(analysis_type == "glme")
+    model <- lme4::glmer(as.formula(formula.string), data=data, family = glme.family)
+
+  return(model)
 }
 
 fit_model_afex.internal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, transformation = NULL, anova.type = 3, es = "ges") {
