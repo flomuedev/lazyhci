@@ -14,6 +14,8 @@
 #' @export
 lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c("poisson", "binominal")) {
   require(janitor)
+  require(emmeans)
+  require(ARTool)
 
   if(!hasArg(analysis_type))
     stop("Please provide an analysis type.")
@@ -120,6 +122,8 @@ do.post_hoc.internal <- function(model, terms, posthoc.adj = "bonf", fct_contras
 }
 
 post_hoc.art.internal <- function(model, factors, posthoc.adj = "bonf") {
+  require(ARTool)
+
   artlm <- artlm.con(model, paste(factors, collapse = ":"))
   result <- post_hoc.internal(artlm, factors, posthoc.adj, collapse = "")
 
@@ -127,6 +131,7 @@ post_hoc.art.internal <- function(model, factors, posthoc.adj = "bonf") {
 }
 
 post_hoc.internal <- function(model, factors, posthoc.adj = "bonf", collapse=":") {
+  require(emmeans)
 
   form_string_emm <- paste0("pairwise ~ ", paste(factors, collapse = collapse))
 
@@ -137,8 +142,8 @@ post_hoc.internal <- function(model, factors, posthoc.adj = "bonf", collapse=":"
 
 lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type, anova.type = 3, glme.family = NULL) {
   require(lme4)
-  library(car)
-  library(emmeans)
+  require(car)
+  require(emmeans)
 
   if(analysis_type == "glme" && !hasArg(analysis_type))
     stop("glme requires the family argument.")
@@ -241,6 +246,10 @@ aov_art_fit.internal <- function(data, DV, participant, within.vars = c(), betwe
 }
 
 interaction_plot.aov.internal <- function(emmeans_model, factors) {
+
+  if(length(factors) > 3)
+    return(NULL)
+
   if(length(factors) == 1) {
     formula2 <- as.formula(paste("~", factors[[1]], sep=""))
   }
@@ -254,6 +263,10 @@ interaction_plot.aov.internal <- function(emmeans_model, factors) {
 }
 
 interaction_plot.art.internal <- function(emmeans_model, factors) {
+
+  if(length(factors) > 3)
+    return(NULL)
+
   colname <- paste(factors, collapse = "")
 
   emmeans_model <- as.data.frame(emmeans_model) %>%
