@@ -15,7 +15,8 @@ data_summary_plot(
   p.title = NULL,
   theme.fontfamily = NULL,
   theme.fontfamily.device = "win",
-  na.rm = FALSE
+  na.rm = FALSE,
+  position = "dodge"
 )
 }
 \arguments{

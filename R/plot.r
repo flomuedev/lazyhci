@@ -99,7 +99,7 @@ data_summary_plot_multiple <- function(data, DVs, IVs, outdir = file.path(getwd(
 #' @param theme.fontfamily.device (optional) the device for extrafont. Defaults to win.
 #' @param na.rm (default = false) if NAs should be removed before plotting
 #' @export
-data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE){
+data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.scale_fill_manual = NULL, p.basesize = 10, p.title = NULL, theme.fontfamily = NULL, theme.fontfamily.device = "win", na.rm = FALSE, position = "dodge"){
   require(ggplot2)
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
@@ -127,11 +127,21 @@ data_summary_plot <- function(data, DV, IVs, fun.sum = mean, fun.error = sd, p.s
   if(!is.null(p.scale_fill_manual))
     p <- p + scale_fill_manual(values = p.scale_fill_manual)
 
-  p <- p + geom_bar(stat="identity",
-                    position=position_dodge(preserve = "single")) +
-    geom_errorbar(aes(ymin=mean-error, ymax=mean+error), width = 0.2,
-                  position = position_dodge(width = 0.9, preserve = "single"))  +
-    ylab(DV.pretty)
+  if(position == "dodge") {
+    p <- p + geom_bar(stat="identity",
+                      position=position_dodge(preserve = "single")) +
+      geom_errorbar(aes(ymin=mean-error, ymax=mean+error), width = 0.2,
+                    position = position_dodge(width = 0.9, preserve = "single"))  +
+      ylab(DV.pretty)
+  } else if(position == "stack") {
+    p <- p + geom_bar(stat="identity",
+                      position="stack") +
+#     geom_errorbar(aes(ymin=mean-error, ymax=mean+error), width = 0.2,
+#                   position = position_dodge(width = 0.9, preserve = "single"))  +
+      ylab(DV.pretty)
+  }
+
+
 
 
   if(length(IVs) == 3) {
