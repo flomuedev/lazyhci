@@ -290,15 +290,15 @@ likert_plot_model <- function(data, DV, IVs, participantCol, grouping = NULL, dr
 #' @seealso \code{\link{likert_plot_model}}
 #'
 #' @export
-plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE, colorscale=NULL, p.basesize = 19, percentagelabel = FALSE, theme.fontfamily = NULL, theme.fontfamily.device = "win") {
+plot_likert <- function(likert.model, title = "", yblank=FALSE, ordered = FALSE, colorscale=NULL, p.basesize = 19, percentagelabel = FALSE, theme.fontfamily = NULL, theme.fontfamily.device = "win", wrap = 1000, group.order = NULL) {
   require(ggplot2)
 
   ensure_font_support.internal(theme.fontfamily, theme.fontfamily.device)
 
   if(!is.null(colorscale))
-    p <- plot(likert.model, ordered = ordered, colors=colorscale)
+    p <- plot(likert.model, ordered = ordered, colors=colorscale, wrap = wrap, group.order=group.order)
   else
-    p <- plot(likert.model, ordered = ordered)
+    p <- plot(likert.model, ordered = ordered, wrap = wrap, group.order=group.order)
 
   p <- p + ggtitle(title)
 

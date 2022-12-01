@@ -14,7 +14,9 @@ lazy_analyze(
   posthoc.adj = "bonf",
   anova.type = 3,
   transformation = NULL,
-  family = c("poisson", "binominal")
+  family = c("poisson", "binominal"),
+  nAGQ = NULL,
+  make_factor = FALSE
 )
 }
 \arguments{

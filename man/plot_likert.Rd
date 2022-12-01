@@ -13,7 +13,9 @@ plot_likert(
   p.basesize = 19,
   percentagelabel = FALSE,
   theme.fontfamily = NULL,
-  theme.fontfamily.device = "win"
+  theme.fontfamily.device = "win",
+  wrap = 1000,
+  group.order = NULL
 )
 }
 \arguments{

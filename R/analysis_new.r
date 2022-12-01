@@ -12,7 +12,7 @@
 #' @param transformation (optional) a transformation that should be applied to the data before the test.
 #'
 #' @export
-lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c("poisson", "binominal")) {
+lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c("poisson", "binominal"), nAGQ=NULL, make_factor = FALSE) {
   require(janitor)
   require(emmeans)
   require(ARTool)
@@ -26,7 +26,8 @@ lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars 
   within.vars.clean <- janitor::make_clean_names(within.vars)
   between.vars.clean <- janitor::make_clean_names(between.vars)
 
-  data.clean <- make.factors.internal(data.clean, c(within.vars.clean, between.vars.clean, participant.clean))
+  if(make_factor)
+    data.clean <- make.factors.internal(data.clean, c(within.vars.clean, between.vars.clean, participant.clean))
 
   result <- list()
   result[["descriptives"]] <- descriptives(data.clean, DV.clean, c(within.vars.clean, between.vars.clean))
@@ -57,7 +58,7 @@ lazy_analyze<- function(data, participant, DV, within.vars = NULL, between.vars 
   }
 
   if(analysis_type == "lme" || analysis_type == "glme") {
-    model <- lmer.fit.inernal(data = data.clean, DV = DV.clean, participant = participant.clean, within.vars = within.vars.clean, between.vars = between.vars.clean, analysis_type = analysis_type, glme.family = family)
+    model <- lmer.fit.inernal(data = data.clean, DV = DV.clean, participant = participant.clean, within.vars = within.vars.clean, between.vars = between.vars.clean, analysis_type = analysis_type, glme.family = family, nAGQ = nAGQ)
     result[["anova"]] <-  car::Anova(model, type=anova.type)
     result[["model"]] <- model
     result[["post_hoc"]] <- do.post_hoc.internal(model, rownames(result[["anova"]][!(row.names(result[["anova"]]) %in% c("(Intercept)")), ]), posthoc.adj, fct_contrasts = post_hoc.internal, fct_ip = interaction_plot.aov.internal)
@@ -140,7 +141,7 @@ post_hoc.internal <- function(model, factors, posthoc.adj = "bonf", collapse=":"
   return(result)
 }
 
-lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type, anova.type = 3, glme.family = NULL) {
+lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, analysis_type, anova.type = 3, glme.family = NULL, nAGQ = NULL) {
   require(lme4)
   require(car)
   require(emmeans)
@@ -161,11 +162,22 @@ lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.
     sep=""
   )
 
+  print(paste0("fitting model for ", formula.string))
+
   if(analysis_type == "lme")
     model <- lme4::lmer(as.formula(formula.string), data=data)
 
-  if(analysis_type == "glme")
-    model <- lme4::glmer(as.formula(formula.string), data=data, family = glme.family)
+  print(nAGQ)
+
+  if(analysis_type == "glme") {
+    if(is.null(nAGQ))
+      model <- lme4::glmer(as.formula(formula.string), data=data, family = glme.family)
+    else
+      model <- lme4::glmer(as.formula(formula.string), data=data, family = glme.family, nAGQ = nAGQ)
+  }
+
+  print("finished fitting model")
+
 
   return(model)
 }
