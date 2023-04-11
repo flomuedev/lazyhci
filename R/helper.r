@@ -1,43 +1,3 @@
-#' setwd_to_clipboard
-#'
-#' Changes the working directory to the one in the clipboard
-#' @export
-setwd_to_clipboard <- function() {
-  setwd(chartr("\\", "/", readClipboard()))
-}
-#' se
-#'
-#' This function allows you to calculate the standard error
-#' @param x The data
-#' @export
-se <- function(x, na.rm=FALSE) {
-  return(sd(x, na.rm=na.rm)/sqrt(ifelse(na.rm, length(x[!is.na(x)]), length(x))))
-}
-
-#' wtf_is
-#'
-#' Reports details about the supplied object
-#' @param x The objectö
-#' @export
-wtf_is <- function(x) {
-  # For when you have no idea what something is.
-  # https://stackoverflow.com/questions/8855589
-  cat("1. typeof():\n")
-  print(typeof(x))
-  cat("\n2. class():\n")
-  print(class(x))
-  cat("\n3. mode():\n")
-  print(mode(x))
-  cat("\n4. names():\n")
-  print(names(x))
-  cat("\n5. slotNames():\n")
-  print(slotNames(x))
-  cat("\n6. attributes():\n")
-  print(attributes(x))
-  cat("\n7. str():\n")
-  print(str(x))
-}
-
 #' fix_col_names
 #'
 #' Removes spaces and comma from column names
@@ -231,7 +191,6 @@ check_complete_design <- function(data, within.vars = NULL, between.vars = NULL,
 
 #' @noRd
 data_summary.internal <- function(data, varname, groupnames, fun.sum = mean, fun.error = sd, na.rm = FALSE){
-  require(dplyr)
 
   data.sum <- data %>%
     dplyr::group_by_at(groupnames) %>%
@@ -274,4 +233,9 @@ build_aov_latex.internal <- function(DFn, DFd, F, p, ges, gge = NA) {
 
 
   return(latexString)
+}
+
+se <- function(x, na.rm=FALSE) {
+  if (na.rm) x <- na.omit(x)
+  sqrt(var(x)/length(x))
 }

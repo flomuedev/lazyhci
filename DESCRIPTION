@@ -1,6 +1,6 @@
 Package: lazyhci
 Title: A collection of helper functions for lazy HCI researchers.
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person(given = "Mueller",
            family = "Florian",
@@ -8,9 +8,20 @@ Authors@R:
            email = "f_m@outlook.com",
            comment = c(ORCID = "0000-0002-9621-6214"))
 Description: A collection of helper functions for lazy HCI researchers.
-Imports: tidyverse (>= 1.3.1),
-		 extrafont (>= 0.1.7),
-		 sets (>= 1.0-18),
+Imports: tidyverse (>= 2.0.0),
+		 extrafont (>= 0.19),
+		 janitor (>= 2.2.0),
+		 checkmate (>= 2.1.0),
+		 ggplot2 (>= 3.4.2),
+		 tibble (>= 3.2.1),
+		 purrr (>= 1.0.1),
+		 sets (>= 1.0-24),
+		 kableExtra (>= 1.3.4),
+		 likert (>= 1.3.5),
+		 grid (>= 4.2.3),
+		 gridExtra (>= 2.3),
+		 colorspace (>= 2.1-0),
+		 dplyr (>= 1.1.1),
 		 qpdf (>= 1.1),
 		 ez (>= 4.4-0),
 		 broom (>= 0.7.9),
@@ -19,10 +30,12 @@ Imports: tidyverse (>= 1.3.1),
 		 lme4 (>= 1.1-30),
 		 car (>= 3.1-0),
 		 emmeans (>= 1.7.5),
-		 PMCMRplus (>= 1.9.5),
-		 janitor (>= 2.1.0)
+		 PMCMRplus (>= 1.9.5)
 License: todo
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
