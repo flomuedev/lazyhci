@@ -6,9 +6,9 @@
 #' @param ivs a vector of strings containing names of the columns containing the independent variables
 #' @param within.vars (optional) a vector of strings containing names of the columns identifying within independent variables
 #' @param between.vars (optional) a vector of strings containing names of the columns identifying within independent variables
-#' @param make_factor indicates if columns should automatically be converted to factors (default FALSE)
+#' @param make_factor indicates if columns should automatically be converted to factors (default TRUE)
 #' @export
-lazy_model <- function(data, participant, within.vars = NULL, between.vars = NULL, make_factor=FALSE) {
+lazy_model <- function(data, participant, within.vars = NULL, between.vars = NULL, make_factor=TRUE) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_string(participant)
@@ -33,13 +33,40 @@ lazy_model <- function(data, participant, within.vars = NULL, between.vars = NUL
 
   source <- tibble::lst(data, participant, within.vars, between.vars)
 
-  return(tibble::lst(data = data.clean,
+  res <- tibble::lst(data = data.clean,
                      participant = participant.clean,
                      within.vars = within.vars.clean,
                      between.vars = between.vars.clean,
                      ivs = c(within.vars.clean, between.vars.clean),
-                     source))
+                     source)
+
+  class(res) <- "lazyhci_model"
+
+  return(res)
 }
+
+#' @export
+print.lazyhci_model <- function(x, ...){
+  cat("This is a lazy hci model.\n\n")
+
+  if(!is.null(x$within.vars)) {
+    cat("Within variables:\n")
+
+    for(v in x$within.vars) {
+      cat("'", v, "' with ", length(levels(x$data[,v])),  " levels (", paste(levels(x$data[,v]), collapse=", "), ")\n", sep="")
+    }
+  }
+
+  if(!is.null(x$between.vars)) {
+    cat("Between variables:\n")
+
+    for(v in x$between.vars) {
+      cat("'", v, "' with ", length(levels(x$data[,v])),  " levels (", paste(levels(x$data[,v]), collapse=", "), ")\n", sep="")
+    }
+  }
+
+}
+
 
 
 

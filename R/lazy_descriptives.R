@@ -22,6 +22,9 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
     IVs <- janitor::make_clean_names(ivs)
   }
 
+  DV.pretty <- dv
+  dv <- janitor::make_clean_names(dv)
+
   groupnames.sets <- as.list(sets::set_power(IVs))
   groupnames.sets <- groupnames.sets[lapply(groupnames.sets,length)>0]
 
@@ -49,6 +52,7 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
     else
       IVstr <- paste0(paste(vars[1:length(vars)-1], collapse = ", "), " and ", vars[length(vars)])
 
+    attr(tmp, 'lazyhci.latexable') <- "table"
     attr(tmp, 'lazyhci.caption') <- paste0("The ", dv, " grouped by ", IVstr, ".")
 
     result[[name]] <- tmp
