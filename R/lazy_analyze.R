@@ -169,7 +169,7 @@ lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.
 
 fit_model_afex.internal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, transformation = NULL, anova.type = 3, es = "ges") {
 
-  afex_options(
+  afex::afex_options(
     correction_aov = "GG",
     emmeans_model = "multivariate"
   )
@@ -302,33 +302,37 @@ print.lazyhci_analysis <- function(x, ...){
 
   if("normality_test" %in% names(x)) {
     cli::cli_par()
-    val <- format(round(x[["normality_test"]], 4), nsmall = 4)
+    val <- finalfit::p_tidy(x[["normality_test"]], digits = 3)
     if(x[["normality_test"]] < 0.05) {
-      cli::cli_alert_danger("Check for the normality of residuals...{.strong FAILED} (p = {val})")
+      cli::cli_alert_danger("Check for the normality of residuals...{.strong FAILED} (p{val})")
       cli::cli_alert_info("Statistical tests for the normality can be unreliable. Please check the histogram by calling {.code plot(x$normality_test)}")
       cli::cli_alert_info("You can try to use a transformation when fitting the model or switch to a non-parametric analysis type.")
     } else
-      cli::cli_alert_success("Check for the normality of residuals...OK (p = {val})")
+      cli::cli_alert_success("Check for the normality of residuals...{.strong OK} (p{val})")
     cli::cli_end()
   }
 
   if("sphericity_test" %in% names(x)) {
     cli::cli_par()
     if(any(x[["sphericity_test"]] < 0.05)) {
-      cli::cli_alert_warning("Check for sphericity...{.strong FAILED}")
+      cli::cli_alert_danger("Check for sphericity...{.strong FAILED}")
       cli::cli_alert_info("The check for sphericity was significant for at least one of you IVs.")
       cli::cli_alert_info("We will correct for these using Greenhouse Geissers method. There is nothing you need to do.")
     } else
-      cli::cli_alert_success("Check for sphericity...OK")
+      cli::cli_alert_success("Check for sphericity...{.strong OK}")
     cli::cli_end()
   }
 
-  if("homogeniety_test" %in% names(x)) {
-    val <- format(round(x[["homogeniety_test"]], 2), nsmall = 2)
-    if(x[["homogeniety_test"]] < 0.05)
-      cli::cli_alert_warning("Check for homogeneity of variances...FAILED ({val})")
-    else
-      cli::cli_alert_success("Check for homogeneity of variances...OK ({val})")
+  if("homogeneity_test" %in% names(x)) {
+    cli::cli_par()
+    val <- finalfit::p_tidy(x[["homogeneity_test"]], digits = 3)
+    if(x[["homogeneity_test"]] < 0.05) {
+      cli::cli_alert_danger("Check for homogeneity of variances...{.strong FAILED} (p{val})")
+      cli::cli_alert_info("The check for homogeneity was significant for at least one of you IVs.")
+      cli::cli_alert_info("ANOVAs are considered robust to light heteroscedasticity. But you should consider using a test that does not require this assumption.")
+    } else
+      cli::homogeneity_test("Check for homogeneity of variances...{.strong OK} (p{val})")
+    cli::cli_end()
   }
 
   cli::cli_h1("Analysis")
