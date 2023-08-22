@@ -11,8 +11,9 @@ lazy_analyze2(
   posthoc.adj = "bonf",
   anova.type = 3,
   transformation = NULL,
-  family = c("poisson", "binominal"),
-  nAGQ = NULL
+  family = c(NULL, "poisson", "binomial"),
+  nAGQ = NULL,
+  lme.formula = NULL
 )
 }
 \arguments{

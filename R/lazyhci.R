@@ -28,8 +28,15 @@ lazy_model <- function(data, participant, within.vars = NULL, between.vars = NUL
   if(!is.null((between.vars)))
     between.vars.clean <- janitor::make_clean_names(between.vars)
 
-  if(make_factor)
-    data.clean <- make.factors.internal(data.clean, c(within.vars.clean, between.vars.clean, participant.clean))
+  if(make_factor) {
+    res <- make.factors.internal(data.clean, c(within.vars.clean, between.vars.clean, participant.clean))
+    if(length(res$changed) > 0) {
+      cli::cli_alert_info("auto-converted columns {res$changed} to factor. You can turn off this behaviour using {.code make_factor=FALSE}.")
+    }
+
+    data.clean <- res$data
+  }
+
 
   source <- tibble::lst(data, participant, within.vars, between.vars)
 
@@ -47,22 +54,68 @@ lazy_model <- function(data, participant, within.vars = NULL, between.vars = NUL
 
 #' @export
 print.lazyhci_model <- function(x, ...){
-  cat("This is a lazy hci model.\n\n")
+  cli::cli_h1("This is a lazy hci model.")
 
-  if(!is.null(x$within.vars)) {
-    cat("Within variables:\n")
+  cli::cli_alert_info(paste("The model contains data of ", x$data %>% dplyr::pull(x$participant) %>% nlevels(), " participants identified as ",
+                       paste(
+                         x$data %>% dplyr::pull(x$participant) %>% levels()
+                         , collapse=", ")
+                       ,".", sep=""))
 
-    for(v in x$within.vars) {
-      cat("'", v, "' with ", length(levels(x$data[,v])),  " levels (", paste(levels(x$data[,v]), collapse=", "), ")\n", sep="")
+  lazy_check <- tryCatch(lazy_check_complete_design2(x),
+                         error=function(e) e,
+                         warning=function(w) w)
+
+  if(is(lazy_check, "warning")) {
+
+    for(m in lazy_check$message) {
+      cli::cli_alert_warning(m)
     }
   }
 
-  if(!is.null(x$between.vars)) {
-    cat("Between variables:\n")
 
-    for(v in x$between.vars) {
-      cat("'", v, "' with ", length(levels(x$data[,v])),  " levels (", paste(levels(x$data[,v]), collapse=", "), ")\n", sep="")
+  if(!is.null(x$within.vars)) {
+    cli::cli_h2("Within variables:\n")
+
+    ulid <- cli::cli_ul()
+
+    for(v in x$within.vars) {
+
+      cli::cli_h3(v)
+
+      inner <- cli::cli_ul()
+      lvls <- x$data %>% dplyr::pull(v)
+      for (lvl in x$data %>% dplyr::pull(v) %>% levels()) {
+        cli::cli_li(lvl)
+      }
+      cli::cli_end(inner)
+
     }
+
+    cli::cli_end(ulid)
+
+  }
+
+  if(!is.null(x$between.vars)) {
+    cli::cli_h2("Between variables:\n")
+
+    ulid <- cli::cli_ul()
+
+    for(v in x$within.vars) {
+
+      cli::cli_h3(v)
+
+      inner <- cli::cli_ul()
+      lvls <- x$data %>% dplyr::pull(v)
+      for (lvl in x$data %>% dplyr::pull(v) %>% levels()) {
+        cli::cli_li(lvl)
+      }
+      cli::cli_end(inner)
+
+    }
+
+    cli::cli_end(ulid)
+
   }
 
 }
@@ -82,12 +135,16 @@ assert_lazy_model.internal <- function(lazy_model) {
 
 #' @noRd
 make.factors.internal <- function(data.clean, vars) {
+  conv.vars <- c()
   for(var in vars) {
     if(!is.factor(data.clean[[var]])) {
-      message(paste0("auto-converting column ", var, " to a factor."))
+      conv.vars <- c(var, conv.vars)
+      #message(paste0("auto-converting column ", var, " to factor."))
       data.clean[[var]] <- as.factor(data.clean[[var]])
     }
   }
 
-  return(data.clean)
+  result <- list(data = data.clean, changed = conv.vars)
+
+  return(result)
 }

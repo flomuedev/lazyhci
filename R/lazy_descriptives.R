@@ -32,7 +32,7 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
 
   for(set in groupnames.sets) {
     vars <- as.list(set)
-    name = paste(vars, collapse ="_")
+    name = paste(vars, collapse ="_x_")
 
     tmp <- lazy_model$data %>%
       dplyr::group_by(dplyr::across(dplyr::all_of(unlist(vars)))) %>%
@@ -58,7 +58,21 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
     result[[name]] <- tmp
   }
 
+  class(result) <- "lazyhci_descriptives"
+
   return(result)
+}
+
+#' @export
+print.lazyhci_descriptives <- function(x, ...){
+  cli::cli_h1("Descriptives")
+
+  for(name in names(x)) {
+    cli::cli_h2(name)
+
+    print(x[[name]])
+    cat("\n")
+  }
 }
 
 lazy_latex <- function(lazy_descriptive) {

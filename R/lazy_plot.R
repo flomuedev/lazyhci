@@ -85,11 +85,11 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
 
 
   if(length(IVs) == 3) {
-    p <- p + facet_wrap(as.formula(paste("~", IVs[3])))
+    p <- p + ggplot2::facet_wrap(as.formula(paste("~", IVs[3])))
   }
 
   if(length(IVs) == 4) {
-    p <- p + facet_grid(as.formula(paste(IVs[3], "~", IVs[4], sep=" ")))
+    p <- p + ggplot2::facet_grid(as.formula(paste(IVs[3], "~", IVs[4], sep=" ")))
 
   }
 

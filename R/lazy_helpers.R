@@ -81,6 +81,35 @@ lazy_import_google_form <- function(url, pre_questions, post_questions, nr_of_co
   return(list("pre" = data.pre, "main" = data.main, "post" = data.post))
 }
 
+lazy_check_complete_design2 <- function(x) {
+  if(!is.null(x$within.vars)) {
+    data.sum <- x$data %>%
+      dplyr::group_by_at(c(x$within.vars, x$participant), .drop=FALSE) %>%
+      dplyr::summarise(
+        n = dplyr::n()
+      )
+
+    ns <- unique(data.sum$n)
+
+    if(length(ns) > 1) {
+      #more
+      missing <- data.sum %>%
+        dplyr::filter(n == 0)
+      warning("This is not a complete design, go and yell at the student. The following condition data seems to be missing:")
+      warning(paste0(capture.output(as.data.frame(missing)), collapse = "\n"))
+    }
+
+    if(length(ns) == 1) {
+      if(ns > 1) {
+        ##repetitions
+        warning("Your data seems to contain multiple (", ns ,") repetitions (or you have not provided all IVs). We will collapse this before the ANOVA.")
+      }
+    }
+  }
+
+
+}
+
 
 #' lazy_check_complete_design
 #'
