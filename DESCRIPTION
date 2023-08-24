@@ -1,6 +1,6 @@
 Package: lazyhci
 Title: A collection of helper functions for lazy HCI researchers
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person(given = "Mueller",
            family = "Florian",
@@ -41,7 +41,8 @@ Imports: extrafont (>= 0.19),
 		 reshape2 (>= 1.4.4),
 		 rlang (>= 1.1.0),
 		 finalfit (>= 1.0.6),
-		 knitr (>= 1.4.2)
+		 knitr (>= 1.4.2),
+		 english (>= 1.2-6)
 License: todo
 Encoding: UTF-8
 LazyData: true

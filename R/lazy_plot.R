@@ -229,7 +229,10 @@ lazy_plot_likert <- function(lazy_model,
 
   ##plotting
 
-  ensure_font_support.internal(theme.fontfamily)
+  assert_font_support.internal(theme.fontfamily)
+
+  if(is.null(group.order))
+    group.order = likert.model$results$Item
 
   if(!is.null(colorscale))
     p <- plot(likert.model, ordered = ordered, colors=colorscale, wrap = wrap, group.order=group.order)

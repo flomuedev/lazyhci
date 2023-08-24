@@ -23,6 +23,7 @@ lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "g
   result <- list()
   attr(result, 'lazyhci.anatype') <- analysis_type
 
+  result[["lazy_model"]] <- lazy_model
   result[["descriptives"]] <- lazy_descriptives(lazy_model, dv)
 
   if(analysis_type == "aov") {
@@ -42,6 +43,8 @@ lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "g
       result[["homogeneity_test"]] <- performance::check_homogeneity(model)
     }
 
+    attr(result, 'lazyhci.latexable') <- "aov"
+
   }
 
   if(analysis_type == "art") {
@@ -51,6 +54,7 @@ lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "g
     model$anovaAOV$eta.sq <- with(model$anovaAOV, `Sum Sq`/(`Sum Sq` + `Sum Sq.res`))
     #model$anovaLME$eta.sq <- with(model$anovaLME, `Sum Sq`/(`Sum Sq` + `Sum Sq.res`))
     class(model) <- "lazyhci_analysis_art"
+    attr(result, 'lazyhci.latexable') <- "art"
     result[["model"]] <- model
     result[["post_hoc"]] <- do.post_hoc.internal(model$m.lme, model$anovaLME %>% dplyr::filter(`Pr(>F)` < 0.05) %>% dplyr::pull(Term), posthoc.adj, fct_contrasts = post_hoc.art.internal, fct_ip = interaction_plot.art.internal)
   }
@@ -60,6 +64,7 @@ lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "g
     anova <-  car::Anova(model, type=anova.type)
     bindmodel <- list(model= model, anova = anova)
     class(bindmodel) <- "lazyhci_analysis_lme4"
+    attr(result, 'lazyhci.latexable') <- "lme"
     result[["model"]] <- bindmodel
     result[["post_hoc"]] <- do.post_hoc.internal(model, rownames(
       anova %>% dplyr::filter(!grepl("Intercept", rownames(anova))) %>% dplyr::filter(`Pr(>Chisq)` < 0.05)
@@ -89,13 +94,13 @@ lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "g
     post_hoc_friedman <- PMCMRplus::frdAllPairsConoverTest(y = data.friedman[[DV.clean]], groups = data.friedman[[within.vars.clean[[1]]]],
                                                            blocks = data.friedman[[participant.clean]], p.adjust.method = posthoc.adj)
 
+    attr(result, 'lazyhci.latexable') <- "friedman"
     result[["test_repetitions"]] <- unique(data.friedman$n)[1]
     result[["model"]] <- friedman
     result[["post_hoc"]] <- post_hoc_friedman
   }
 
   class(result) <- "lazyhci_analysis"
-  attr(result, 'lazyhci.latexable') <- "text"
   attr(result, 'lazyhci.dv') <- dv
 
   return(result)
