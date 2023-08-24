@@ -50,6 +50,7 @@ The function automatically checks assumptions and runs corresponding post-hoc te
 ## Installing
 
 ```
+# install.packages("devtools") ### if you have not installed devtools yet
 
 library(devtools)
 
