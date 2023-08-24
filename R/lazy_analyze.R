@@ -434,6 +434,11 @@ print.lazyhci_post_hoc_list <- function(x, ...){
 }
 
 #' @export
+print.afex_aov <- function(x, ...){
+  print(anova(x, correction = "GG"))
+}
+
+#' @export
 print.lazyhci_post_hoc_friedman <- function(x, ...){
   cli::cli_h1("Post-Hoc Tests")
   print()

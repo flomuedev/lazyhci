@@ -144,7 +144,6 @@ aov_get_post_hoc_string <- function(lazy_object, term) {
 
   res <- c()
 
-
   if(nrow(q_001) > 0) {
     for(i in 1:nrow(q_001)) {       # for-loop over rows
       post_hoc <-q_001[i, ]
@@ -152,7 +151,7 @@ aov_get_post_hoc_string <- function(lazy_object, term) {
       res <- c(res, str)
     }
 
-    res <- c(res, "$(p<.001)$")
+    res[length(res)] <- paste0(res[length(res)], " $(p<.001)$")
   }
 
   if(nrow(q_01) > 0) {
@@ -162,7 +161,7 @@ aov_get_post_hoc_string <- function(lazy_object, term) {
       res <- c(res, str)
     }
 
-    res <- c(res, "$(p<.01)$")
+    res[length(res)] <- paste0(res[length(res)], " $(p<.01)$")
   }
 
   if(nrow(q_05) > 0) {
@@ -172,12 +171,10 @@ aov_get_post_hoc_string <- function(lazy_object, term) {
       res <- c(res, str)
     }
 
-    res <- c(res, "$(p<.05)$")
+    res[length(res)] <- paste0(res[length(res)], " $(p<.05)$")
   }
 
-
-
-  return(stringr::str_flatten_comma(res, "and"))
+  return(stringr::str_flatten_comma(res, " and "))
 }
 
 aov_get_test_data <- function(lazy_object, term, round.digits = 2, categorize.p = TRUE) {
@@ -228,13 +225,15 @@ print_omnibus_analysis <- function(lazy_object, type, round.digits, terms.sig, t
 
     string <- fill_template2(get_template("omnibus_significant"), fun_get_test_data(lazy_object, term.sig))
 
-    print(stringr::str_to_sentence(paste0(starter, ", ", string)))
+    cat(stringr::str_to_sentence(paste0(starter, ", ", string)))
     cur <- cur+1
 
 
     #post-hoc
-    print(fun_get_post_hoc_string(lazy_object,term.sig))
-  }
+    cat(fill_template2(get_template("post_hoc_significant"), data.frame(post_hoc=fun_get_post_hoc_string(lazy_object,term.sig))))
+
+    cat("\n\n")
+     }
 
   terms.nsig.main <- terms.nsig %>% stringr::str_subset(":", negate = TRUE)
   terms.nsig.int  <- terms.nsig %>% stringr::str_subset(":")
