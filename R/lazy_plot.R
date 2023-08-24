@@ -153,7 +153,7 @@ lazy_plot_likert <- function(lazy_model,
     survey_vector <- "manual"
     survey_vector_manual <- levels(as.factor(data.plot$Q))
 
-    message(paste("Using ", survey_vector_manual, " as survey_vector for as_is. Please override if the order is not correct.", sep=""))
+    cli::cli_alert_info(paste("Using ", survey_vector_manual, " as survey_vector for as_is. Please override if the order is not correct.", sep=""))
   }
 
   if(survey_vector == "auto") {
@@ -171,10 +171,10 @@ lazy_plot_likert <- function(lazy_model,
     } else if(uniqueItems == 7) {
       survey_vector <- "likert-7"
     } else
-      stop("Cannot autodetect survey vector (too much options).")
+      cli::cli_abort("Cannot autodetect survey vector (too much options).")
 
 
-    message(paste("Autodetected ", survey_vector, " as survey_vector. Please override if this is not correct.", sep=""))
+    cli::cli_alert_info(paste("Autodetected ", survey_vector, " as survey_vector. Please override if this is not correct.", sep=""))
   }
 
   if(survey_vector == "likert-4")
@@ -209,7 +209,7 @@ lazy_plot_likert <- function(lazy_model,
   IVs.rest.col <- paste(IVs.rest, collapse = " + ")
   formulaString <- paste0(formulaString, IVs.rest.col)
 
-  message(paste("Building Likert model for DV '", dv, "' with ", formulaString, sep=""))
+  #message(paste("Building Likert model for DV '", dv, "' with ", formulaString, sep=""))
 
   data.likert <- reshape2::dcast(data.plot, as.formula(formulaString), value.var = "Q")
 
@@ -309,13 +309,16 @@ assert_font_support.internal <- function(fontfamily) {
   if(is.null(fontfamily))
     return()
 
-  if(is.null(extrafont::fonts()))
-    extrafont::loadfonts(device = "all")
+  #if(is.null(extrafont::fonts()))
+  #  extrafont::loadfonts(device = "all")
+
+  extrafont::loadfonts(device = "all", quiet = TRUE)
 
   result <- fontfamily %in% extrafont::fonts()
 
-  if(!result)
-    stop(paste0("Sorry, could not load font family ", fontfamily, ". Check spelling or run extrafont::font_import() if using this the first time. If you get 'No FontName. Skipping' during font_import(), try https://stackoverflow.com/questions/61204259/how-can-i-resolve-the-no-font-name-issue-when-importing-fonts-into-r-using-ext/68642855#68642855"))
+  if(!result) {
+    cli::cli_abort(paste0("Sorry, could not load font family ", fontfamily, ". Check spelling or run extrafont::font_import() if using this the first time. If you get 'No FontName. Skipping' during font_import(), try https://stackoverflow.com/questions/61204259/how-can-i-resolve-the-no-font-name-issue-when-importing-fonts-into-r-using-ext/68642855#68642855"))
+  }
 
-  message("You are plotting using a custom font. When exporting to PDF, make sure to use ggsave with device = cairo_pdf for the fonts to be automatically embedded.")
-}
+  cli::cli_alert_info("You are plotting using a custom font. When exporting to PDF, make sure to use ggsave with device = cairo_pdf for the fonts to be automatically embedded.")
+  }
