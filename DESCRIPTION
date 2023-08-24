@@ -1,6 +1,6 @@
 Package: lazyhci
 Title: A collection of helper functions for lazy HCI researchers
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person(given = "Mueller",
            family = "Florian",

@@ -243,17 +243,17 @@ lazy_plot_likert <- function(lazy_model,
     p <- p + ggtitle(title)
 
   if(!is.null(theme.fontfamily))
-    p <- p + theme_minimal(base_family = theme.fontfamily, base_size = p.basesize)
+    p <- p + ggplot2::theme_minimal(base_family = theme.fontfamily, base_size = p.basesize)
   else
-    p <- p + theme_minimal(base_size = p.basesize)
+    p <- p + ggplot2::theme_minimal(base_size = p.basesize)
 
-  p <- p +  theme(plot.title = element_text(hjust = 0.5)) + theme(legend.position="bottom") + guides(fill = guide_legend(nrow = 1))
+  p <- p +  ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) + ggplot2::theme(legend.position="bottom") + ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
 
   if(yblank)
-    p <- p + theme(axis.text.y = element_blank())
+    p <- p + ggplot2::theme(axis.text.y = ggplot2::element_blank())
 
   if(!percentagelabel) {
-    p <- p + theme(axis.title.x = element_blank())
+    p <- p + ggplot2::theme(axis.title.x = ggplot2::element_blank())
   }
 
   return(p)
@@ -310,12 +310,12 @@ assert_font_support.internal <- function(fontfamily) {
     return()
 
   if(is.null(extrafont::fonts()))
-    extrafont::loadfonts()
+    extrafont::loadfonts(device = "all")
 
   result <- fontfamily %in% extrafont::fonts()
 
   if(!result)
-    stop(paste0("Sorry, could not load font family ", fontfamily, ". Check spelling or run font_import() if using this the first time. If you get 'No FontName. Skipping' during font_import(), try https://stackoverflow.com/questions/61204259/how-can-i-resolve-the-no-font-name-issue-when-importing-fonts-into-r-using-ext/68642855#68642855"))
+    stop(paste0("Sorry, could not load font family ", fontfamily, ". Check spelling or run extrafont::font_import() if using this the first time. If you get 'No FontName. Skipping' during font_import(), try https://stackoverflow.com/questions/61204259/how-can-i-resolve-the-no-font-name-issue-when-importing-fonts-into-r-using-ext/68642855#68642855"))
 
   message("You are plotting using a custom font. When exporting to PDF, make sure to use ggsave with device = cairo_pdf for the fonts to be automatically embedded.")
 }
