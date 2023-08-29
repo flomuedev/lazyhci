@@ -25,7 +25,7 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
   DV.pretty <- dv
   dv <- janitor::make_clean_names(dv)
 
-  groupnames.sets <- as.list(sets::set_power(IVs))
+  groupnames.sets <- list_all_subsets(IVs)
   groupnames.sets <- groupnames.sets[lapply(groupnames.sets,length)>0]
 
   result <- list()
@@ -61,6 +61,14 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
   class(result) <- "lazyhci_descriptives"
 
   return(result)
+}
+
+list_all_subsets <- function(x) {
+  return (unlist(lapply(1:length(x),    # Get all combinations
+                combinat::combn,
+                x = x,
+                simplify = FALSE),
+         recursive = FALSE))
 }
 
 #' @export

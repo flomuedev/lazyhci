@@ -137,6 +137,100 @@ lazy_latex2 <- function(lazy_object, round.digits = 2, p.val = 0.05) {
   }
 }
 
+build_post_hoc_string_aov2 <- function(lazy_object, post_hoc, term, digits = 2, mean = TRUE, sd = TRUE) {
+  ivTerms <-  stringr::str_split(term, pattern = ":", simplify = TRUE)
+  post_hoc_tests <- post_hoc
+
+  for(i in seq_len(nrow(post_hoc_tests))) {
+    post_hoc_test <- post_hoc_tests[i,]
+    descriptives <- lazy_object$descriptives[[paste0(ivTerms, collapse = "_x_")]]
+
+    post_hoc_test_parts <- stringr::str_split(string = post_hoc_test[[1]], pattern = " - ", simplify = TRUE)
+
+    left <- stringr::str_split(string = post_hoc_test_parts[[1]], pattern = " ", simplify = TRUE)
+    right <- stringr::str_split(string = post_hoc_test_parts[[2]], pattern = " ", simplify = TRUE)
+
+    res <- c()
+
+    descriptives.left <- descriptives
+    descriptives.right <- descriptives
+
+    for(i in 1:length(left)) {
+      lvl_pretty <- get_pretty_lvl(lazy_object$lazy_model, iv = ivTerms[[i]], lvl = left[[i]])
+      res <- c(res, lvl_pretty)
+
+      descriptives.left <- descriptives.left %>% dplyr::filter(!!as.name(ivTerms[[i]]) == left[[i]])
+    }
+
+    descriptives.string.left <- c()
+    if(mean)
+      descriptives.string.left <- c(descriptives.string.left, paste0("M = ", round(descriptives.left[["mean"]], digits = digits)))
+    if(sd)
+      descriptives.string.left <- c(descriptives.string.left, paste0("SD = ", round(descriptives.left[["sd"]], digits = digits)))
+    descriptives.string.left <- paste0("($", paste0(descriptives.string.left, collapse = ", "), "$)")
+
+
+    res <- c(res, descriptives.string.left)
+
+
+    res <- c(res, " - ")
+
+
+    for(i in 1:length(right)) {
+      lvl_pretty <- get_pretty_lvl(lazy_object$lazy_model, iv = ivTerms[[i]], lvl = right[[i]])
+      res <- c(res, lvl_pretty)
+
+      descriptives.right <- descriptives.right %>% dplyr::filter(!!as.name(ivTerms[[i]]) == right[[i]])
+
+    }
+
+
+    descriptives.string.right <- c()
+    if(mean)
+      descriptives.string.right <- c(descriptives.string.right, paste0("M = ", round(descriptives.left[["mean"]], digits = digits)))
+    if(sd)
+      descriptives.string.right <- c(descriptives.string.right, paste0("SD = ", round(descriptives.left[["sd"]], digits = digits)))
+    descriptives.string.right <- paste0("($", paste0(descriptives.string.right, collapse = ", "), "$)")
+
+
+    res <- c(res, descriptives.string.right)
+
+    return(paste0(res, collapse = " "))
+  }
+}
+
+
+build_post_hoc_string_aov <- function(lazy_object, post_hoc, term) {
+  terms <-  stringr::str_split(term, pattern = ":", simplify = TRUE)
+  terms <- c(terms, " - ", terms)
+
+  lrterms <- stringr::str_split(post_hoc[[1]], pattern = " - ", simplify = TRUE)
+
+  post_hoc_lvl <- stringr::str_split(post_hoc[[1]], pattern = " ", simplify = TRUE)
+  res_string <- c()
+  for(i in 1:length(post_hoc_lvl)) {
+    if(post_hoc_lvl[[i]] != "-") {
+      str <- get_pretty_lvl(lazy_object$lazy_model, iv = terms[[i]], lvl = post_hoc_lvl[[i]])
+      #print(row.names(m))
+      res_string <- c(res_string, str)
+    } else {
+      subterms <- stringr::str_split(string = lrterms[[1]], pattern = " ", simplify = TRUE)
+      for(i in length(subterms)) {
+
+      }
+      res_string <- c(res_string, "-")
+    }
+
+   # m <- lazy_object$descriptives[[stringr::str_replace_all(term, ":", "_x_")]]
+  #  m %>% dplyr::filter(!!as.name(v1)  == "continuous" & orientation_undo == "with_orientation_undo")
+  }
+
+  #subterms <- stringr::str_split(string = lrterms[[2]], pattern = " ", simplify = TRUE)
+  #print(subterms)
+
+  str <- paste0(res_string, collapse = " ")
+}
+
 aov_get_post_hoc_string <- function(lazy_object, term) {
   q_001 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(p.value < 0.001)
   q_01 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(p.value >= 0.001 & p.value < 0.01)
@@ -147,31 +241,32 @@ aov_get_post_hoc_string <- function(lazy_object, term) {
   if(nrow(q_001) > 0) {
     for(i in 1:nrow(q_001)) {       # for-loop over rows
       post_hoc <-q_001[i, ]
-      str <- paste0(post_hoc[[1]])
+
+      str <- build_post_hoc_string_aov2(lazy_object = lazy_object, post_hoc = post_hoc, term = term)
       res <- c(res, str)
     }
 
-    res[length(res)] <- paste0(res[length(res)], " $(p<.001)$")
+    res[length(res)] <- paste0(res[length(res)], ", $p<.001$")
   }
 
   if(nrow(q_01) > 0) {
     for(i in 1:nrow(q_01)) {       # for-loop over rows
       post_hoc <-q_01[i, ]
-      str <- paste0(post_hoc[[1]])
+      str <- build_post_hoc_string_aov2(lazy_object = lazy_object, post_hoc = post_hoc, term = term)
       res <- c(res, str)
     }
 
-    res[length(res)] <- paste0(res[length(res)], " $(p<.01)$")
+    res[length(res)] <- paste0(res[length(res)], ", $p<.01$")
   }
 
   if(nrow(q_05) > 0) {
     for(i in 1:nrow(q_05)) {       # for-loop over rows
       post_hoc <-q_05[i, ]
-      str <- paste0(post_hoc[[1]])
+      str <- build_post_hoc_string_aov2(lazy_object = lazy_object, post_hoc = post_hoc, term = term)
       res <- c(res, str)
     }
 
-    res[length(res)] <- paste0(res[length(res)], " $(p<.05)$")
+    res[length(res)] <- paste0(res[length(res)], ", $p<.05$")
   }
 
   return(stringr::str_flatten_comma(res, " and "))
@@ -193,7 +288,8 @@ aov_get_test_data <- function(lazy_object, term, round.digits = 2, categorize.p 
       length(unlist(stringr::str_split(term, pattern = ":"))) == 1,
       "main",
       "interaction")) %>%
-    dplyr::mutate(ivs = stringr::str_flatten_comma(unlist(stringr::str_split(term, pattern = ":")), last = " and ")) %>%
+    dplyr::mutate(ivs = stringr::str_flatten_comma(get_pretty_name_iv_c(lazy_object$lazy_model, unlist(stringr::str_split(term, pattern = ":"))), last = " and ")) %>%
+    #dplyr::mutate(ivs = paste0(get_pretty_name_iv_c(lazy_object$lazy_model, c("position_undo")))) %>%
     dplyr::mutate(dv = attr(lazy_object, "lazyhci.dv")) %>%
     dplyr::mutate(es_str = dplyr::if_else(
       ges > 0.26,
@@ -230,6 +326,7 @@ print_omnibus_analysis <- function(lazy_object, type, round.digits, terms.sig, t
 
 
     #post-hoc
+    cat(" ")
     cat(fill_template2(get_template("post_hoc_significant"), data.frame(post_hoc=fun_get_post_hoc_string(lazy_object,term.sig))))
 
     cat("\n\n")

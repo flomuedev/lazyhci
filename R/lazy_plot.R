@@ -135,17 +135,24 @@ lazy_plot_likert <- function(lazy_model,
                              yblank=FALSE,
                              ordered = FALSE,
                              colorscale=NULL,
-                             p.basesize = 19,
+                             p.basesize = 10,
                              percentagelabel = FALSE,
                              theme.fontfamily = NULL,
                              wrap = 1000,
                              group.order = NULL) {
 
-  IVs <- lazy_model$ivs
+  assert_lazy_model.internal(lazy_model)
+  assert_font_support.internal(fontfamily = theme.fontfamily)
+  pkg.env$assert_colnames_quietly(lazy_model$source$data, dv, only_colnames=FALSE)
 
-  data.plot <- as.data.frame(lazy_model$data)
-  data.plot$Q <- data.plot[,dv]
-  data.plot$P <- data.plot[,lazy_model$participant]
+  DV.pretty <- dv
+  dv <- janitor::make_clean_names(dv)
+
+  IVs <- lazy_model$source$ivs
+
+  data.plot <- as.data.frame(lazy_model$source$data)
+  data.plot$Q <- data.plot[,DV.pretty]
+  #data.plot$P <- data.plot[,lazy_model$participant]
 
   survey_vector <- rlang::arg_match(survey_vector)
 
@@ -192,52 +199,51 @@ lazy_plot_likert <- function(lazy_model,
   } else
     stop("error parsing survey_vector")
 
-  formulaString <- "P"
 
-  IVs.rest <- IVs
-  startFactorCol <- 2
-  grouping.merged <- NULL
+  IVs.rest <- IVs[!IVs %in% c(grouping, drop)]
+  startFactorCol <- 2 + length(c(grouping, drop))
 
-  if(!is.null(c(grouping, drop))) {
-    grouping.col <- paste0(c(grouping, drop), collapse = " + ")
-    formulaString <- paste0(formulaString, " + ", grouping.col)
-    IVs.rest <- IVs[!IVs %in% c(grouping, drop)]
-    startFactorCol <- startFactorCol + length(c(grouping, drop))
-  }
+  data.likert <- data.plot %>%
+    dplyr::select(lazy_model$source$participant,grouping,drop,IVs.rest, Q) %>%
+    tidyr::pivot_wider(names_from = IVs.rest, values_from = Q, names_sep = " | ")
 
-  formulaString <- paste0(formulaString, " ~ ")
-  IVs.rest.col <- paste(IVs.rest, collapse = " + ")
-  formulaString <- paste0(formulaString, IVs.rest.col)
-
-  #message(paste("Building Likert model for DV '", dv, "' with ", formulaString, sep=""))
-
-  data.likert <- reshape2::dcast(data.plot, as.formula(formulaString), value.var = "Q")
+  data.likert <- as.data.frame(data.likert)
 
   for(factorCol in startFactorCol:ncol(data.likert)) {
-    data.likert[,factorCol] <- factor(data.likert[,factorCol], levels = seq(1:length(survey_vector)), labels = survey_vector)
+    data.likert[,factorCol] <- factor(data.likert[,factorCol, drop = TRUE], levels = seq(1:length(survey_vector)), labels = survey_vector)
   }
 
+  grouping.cols <- NULL
+
   if(!is.null(grouping)) {
-    groupingColName <- paste(grouping, collapse = "x")
-    grouping.cols <- data.likert %>% select(one_of(grouping))
-    grouping.merged <- grouping.cols %>% unite("grouping", 1:ncol(.), sep=" & ", remove = FALSE)
+    #groupingColName <- paste(grouping, collapse = "x")
+    #grouping.cols <- data.likert[,grouping]
+    #grouping.merged <- grouping.cols %>% tidyr::unite("grouping", 1:ncol(.), sep=" & ", remove = FALSE)
+
+    grouping.cols <- data.likert[,grouping]
+
+    if(length(grouping) > 1) {
+      grouping.cols <- data.likert[,grouping] %>% tidyr::unite("grouping", 1:ncol(.), sep=" & ", remove = TRUE) %>% dplyr::pull()
+    }
+
   }
 
   startCol <- length(c(grouping, drop)) + 2
 
-  likert.model <- likert::likert(data.likert[,startCol:ncol(data.likert)], grouping = grouping.merged$grouping)
+  likert.model <- likert::likert(data.likert[,startCol:ncol(data.likert)], grouping = grouping.cols)
 
-  ##plotting
 
   assert_font_support.internal(theme.fontfamily)
 
-  if(is.null(group.order))
-    group.order = likert.model$results$Item
+  if(is.null(colorscale)) {
+    colorscale = RColorBrewer::brewer.pal(length(survey_vector), "Dark2")
+  }
 
-  if(!is.null(colorscale))
+
+  if(!is.null(group.order))
     p <- plot(likert.model, ordered = ordered, colors=colorscale, wrap = wrap, group.order=group.order)
   else
-    p <- plot(likert.model, ordered = ordered, wrap = wrap, group.order=group.order)
+    p <- plot(likert.model, ordered = ordered, colors=colorscale, wrap = wrap)
 
   if(!is.null(title))
     p <- p + ggtitle(title)

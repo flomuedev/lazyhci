@@ -192,3 +192,61 @@ lazy_check_complete_design <- function(lazy_model, dv) {
 lazy_demo_data <- function(filename) {
   return(system.file(file.path('testdata', filename), package = "lazyhci"))
 }
+
+# #' 'Clean' a character/factor vector like `janitor::clean_names()` does for data frame columns
+# #'
+# #' From https://stackoverflow.com/a/47887699
+# #'
+# #' Most of the internals are from `janitor::clean_names()`
+# #'
+# #' @param x a vector of strings or factors
+# #' @param refactor if `x` is a factor, return a ref-factored factor?
+# #'        Default: `FALSE` == return character vector.
+clean_vec <- function (x, refactor=FALSE) {
+
+  require(magrittr, quietly=TRUE)
+
+  if (!(is.character(x) || is.factor(x))) return(x)
+
+  x_is_factor <- is.factor(x)
+
+  old_names <- as.character(x)
+
+  new_names <- old_names %>%
+    gsub("'", "", .) %>%
+    gsub("\"", "", .) %>%
+    gsub("%", "percent", .) %>%
+    gsub("^[ ]+", "", .) %>%
+    make.names(.) %>%
+    gsub("[.]+", "_", .) %>%
+    gsub("[_]+", "_", .) %>%
+    tolower(.) %>%
+    gsub("_$", "", .)
+
+  dupe_count <- sapply(1:length(new_names), function(i) {
+    sum(new_names[i] == new_names[1:i])
+  })
+
+  new_names[dupe_count > 1] <- paste(
+    new_names[dupe_count > 1], dupe_count[dupe_count > 1], sep = "_"
+  )
+
+  if (x_is_factor && refactor) factor(new_names) else new_names
+
+  return(list(old=old_names, new=new_names))
+
+}
+
+clean_levels <-function(x) {
+  if(!is.factor(x))
+    return(x)
+
+  old_lvl <- levels(x)
+  names(old_lvl) <- janitor::make_clean_names(old_lvl)
+
+  res <- forcats::fct_recode(x, !!!old_lvl)
+
+  out <- list(dat=res, map = old_lvl)
+
+  return(out)
+}

@@ -8,7 +8,7 @@
 #' @param between.vars (optional) a vector of strings containing names of the columns identifying within independent variables
 #' @param make_factor indicates if columns should automatically be converted to factors (default TRUE)
 #' @export
-lazy_model <- function(data, participant, within.vars = NULL, between.vars = NULL, make_factor=TRUE) {
+lazy_model <- function(data, participant, within.vars = NULL, between.vars = NULL, make_factor=TRUE, random.effects = NULL) {
 
   checkmate::assert_data_frame(data)
   checkmate::assert_string(participant)
@@ -37,8 +37,16 @@ lazy_model <- function(data, participant, within.vars = NULL, between.vars = NUL
     data.clean <- res$data
   }
 
+  old <- list()
 
-  source <- tibble::lst(data, participant, within.vars, between.vars)
+  for(iv in c(within.vars.clean, between.vars.clean)) {
+    res <- clean_levels(unlist(data.clean[iv]))
+    data.clean[iv] <- res[["dat"]]
+    old[[iv]] <- res[["map"]]
+  }
+
+
+  source <- tibble::lst(data, participant, within.vars, between.vars, ivs = c(within.vars, between.vars), lvl = old)
 
   res <- tibble::lst(data = data.clean,
                      participant = participant.clean,
@@ -50,6 +58,29 @@ lazy_model <- function(data, participant, within.vars = NULL, between.vars = NUL
   class(res) <- "lazyhci_model"
 
   return(res)
+}
+
+get_pretty_lvl <- function(lazy_model, iv, lvl) {
+  return(lazy_model$source$lvl[[iv]][[lvl]])
+}
+
+get_pretty_name_iv_c <-function(lazy_model, ivs) {
+  return(unlist(lapply(ivs, get_pretty_name_iv, lazy_model = lazy_model)))
+}
+
+get_pretty_name_iv <- function(lazy_model, iv) {
+  index <- which(lazy_model$ivs == iv)
+  return(lazy_model$source$ivs[index])
+}
+
+get_pretty_name_dv_c <- function(lazy_model, dvs) {
+  return(unlist(lapply(dvs, get_pretty_name_dv, lazy_model = lazy_model)))
+
+}
+
+get_pretty_name_dv <- function(lazy_model, dv) {
+  index <- grep(dv, colnames(lazy_model$data))
+  return(colnames(lazy_model$source$data)[index])
 }
 
 #' @export

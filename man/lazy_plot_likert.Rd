@@ -16,7 +16,7 @@ lazy_plot_likert(
   yblank = FALSE,
   ordered = FALSE,
   colorscale = NULL,
-  p.basesize = 19,
+  p.basesize = 10,
   percentagelabel = FALSE,
   theme.fontfamily = NULL,
   wrap = 1000,

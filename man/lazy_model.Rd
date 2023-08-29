@@ -9,7 +9,8 @@ lazy_model(
   participant,
   within.vars = NULL,
   between.vars = NULL,
-  make_factor = TRUE
+  make_factor = TRUE,
+  random.effects = NULL
 )
 }
 \arguments{
