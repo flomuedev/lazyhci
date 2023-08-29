@@ -9,8 +9,7 @@ lazy_model(
   participant,
   within.vars = NULL,
   between.vars = NULL,
-  make_factor = TRUE,
-  random.effects = NULL
+  make_factor = TRUE
 )
 }
 \arguments{
@@ -23,8 +22,6 @@ lazy_model(
 \item{between.vars}{(optional) a vector of strings containing names of the columns identifying within independent variables}
 
 \item{make_factor}{indicates if columns should automatically be converted to factors (default TRUE)}
-
-\item{ivs}{a vector of strings containing names of the columns containing the independent variables}
 }
 \description{
 This function produces a lazy mode

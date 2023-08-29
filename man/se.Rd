@@ -8,6 +8,8 @@ se(x, na.rm = FALSE)
 }
 \arguments{
 \item{x}{The data}
+
+\item{na.rm}{remove NA (defaults to FALSE)}
 }
 \description{
 This function allows you to calculate the standard error

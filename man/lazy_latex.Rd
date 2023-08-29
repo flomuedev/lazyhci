@@ -2,16 +2,20 @@
 % Please edit documentation in R/lazy_latex.R
 \name{lazy_latex}
 \alias{lazy_latex}
-\title{descriptives}
+\title{lazy_latex}
 \usage{
-lazy_latex(lazy_object)
+lazy_latex(lazy_object, round.digits = 2, p.val = 0.05)
 }
 \arguments{
-\item{lazy_model}{an object produced by lazy_hci.}
+\item{lazy_object}{an object produced by lazy_hci.}
+
+\item{round.digits}{the number of digits to print}
+
+\item{p.val}{the significant p value}
 }
 \description{
 provides latex code for lazy_objects.
 }
 \details{
-Currently supported: lazy_descriptives (table)
+Currently supported: lazy_descriptives (table), lazy_analyze (only aov)
 }

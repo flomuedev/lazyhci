@@ -110,7 +110,7 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
 #' likert_plot_model
 #'
 #' This function produces a likert model that can be plotted
-#' @param data the data
+#' @param lazy_model the lazy model
 #' @param dv the name of the column containing the dependent variable.
 #' @param grouping (optional) one or more grouping IVs
 #' @param drop (optional) one or more of the IVs that should be dropped before plotting.
@@ -123,6 +123,8 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
 #' @param p.basesize (optional) that base size of the plot
 #' @param percentagelabel (optional) if the percentage labels should be shown
 #' @param theme.fontfamily (optional) the font family to use
+#' @param wrap description
+#' @param group.order (optional) the group.order. If grouped, the order of the grouping.
 #'
 #' @export
 lazy_plot_likert <- function(lazy_model,
@@ -268,6 +270,8 @@ lazy_plot_likert <- function(lazy_model,
 #' lazy_arrange_plots
 #'
 #' Arranges multiple ggplot grobs in one plot
+#' @param ... the plot objects
+#' @param ncol (optional) number of columns
 #' @param nrow (optional) number of rows (defaults to 1)
 #' @param position (optional) position of the legend, defaults to bottom
 #'

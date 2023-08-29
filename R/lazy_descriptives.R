@@ -83,6 +83,6 @@ print.lazyhci_descriptives <- function(x, ...){
   }
 }
 
-lazy_latex <- function(lazy_descriptive) {
-    kableExtra::kbl(lazy_descriptive, format = "latex", booktabs = TRUE, caption = attr(lazy_descriptive,"lazyhci.caption"))
-}
+#lazy_latex <- function(lazy_descriptive) {
+#    kableExtra::kbl(lazy_descriptive, format = "latex", booktabs = TRUE, caption = attr(lazy_descriptive,"lazyhci.caption"))
+#}

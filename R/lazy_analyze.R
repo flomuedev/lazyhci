@@ -1,15 +1,23 @@
-#' lazy_analyze2
+#' lazy_analyze
 #'
 #' This function conducts (non-) parametric analyzes of (multi-) factorial experiments
 #' @param lazy_model the data model
 #' @param dv the column name of the dependent variable
 #' @param analysis_type one of "aov", "art", "friedman", "lme", "glme".
-#' @param posthoc.adj the adjustment method for post-hoc tests. Defaults to "bonferroni"
+#' @param posthoc.adj the adjustment method for post-hoc tests. Defaults to "bonf"
 #' @param anova.type the type of anova test to perform. Defaults to 3
 #' @param transformation (optional) a transformation that should be applied to the data before the test.
+#' @param family the family to use for lme or glme.One of "poisson" or "binomial"
+#' @param nAGQ the nAGQ argument for glmer
+#' @param lme.formula (optional) a formula for glme or lme calls to override the calculated formula.
+#'
+#' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
+#' @importFrom methods hasArg is
+#' @importFrom utils capture.output readClipboard tail
+#' @importFrom rlang .data
 #'
 #' @export
-lazy_analyze2<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL) {
+lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL) {
 
   analysis_type <- match.arg(analysis_type)
   family <- match.arg(family)
@@ -196,6 +204,7 @@ lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.
   return(model)
 }
 
+
 fit_model_afex.internal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, transformation = NULL, anova.type = 3, es = "ges") {
 
   afex::afex_options(
@@ -373,7 +382,7 @@ print.lazyhci_analysis <- function(x, ...){
       cli::cli_alert_info("The check for homogeneity was significant for at least one of you IVs.")
       cli::cli_alert_info("ANOVAs are considered robust to light heteroscedasticity. But you should consider using a test that does not require this assumption.")
     } else
-      cli::homogeneity_test("Check for homogeneity of variances...{.strong OK} (p{val})")
+      cli::cli_alert_success("Check for homogeneity of variances...{.strong OK} (p{val})")
     cli::cli_end()
     test = TRUE
   }

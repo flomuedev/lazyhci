@@ -8,18 +8,19 @@ Authors@R:
            email = "f_m@outlook.com",
            comment = c(ORCID = "0000-0002-9621-6214"))
 Description: A collection of helper functions for lazy HCI researchers.
-Imports: extrafont (>= 0.19),
+Imports: stats(>= 4.0.0),
+      methods(>= 4.0.0),
+      utils(>= 4.0.0),
+      extrafont (>= 0.19),
 		 janitor (>= 2.2.0),
 		 checkmate (>= 2.1.0),
 		 ggplot2 (>= 3.4.2),
 		 tibble (>= 3.2.1),
 		 purrr (>= 1.0.1),
-		 sets (>= 1.0-24),
 		 kableExtra (>= 1.3.4),
 		 likert (>= 1.3.5),
 		 grid (>= 4.2.3),
 		 gridExtra (>= 2.3),
-		 colorspace (>= 2.1-0),
 		 dplyr (>= 1.1.1),
 		 lme4 (>= 1.1-32),
 		 performance (>= 0.10.2),
@@ -29,21 +30,19 @@ Imports: extrafont (>= 0.19),
 		 car (>= 3.1-2),
 		 emmeans (>= 1.8.5),		 
 		 afex (>= 1.2-1),
-		 ez (>= 4.4-0),
-		 broom (>= 1.0.4),
 		 cli (>= 3.6.1),
 		 assertable (>= 0.2.8),
 		 ARTool (>= 0.11.1),
 		 fs (>= 1.6.1),
 		 googlesheets4 (>= 1.1.0),
 		 gtools (>= 3.9.4),
-		 qpdf (>= 1.3.2),
-		 reshape2 (>= 1.4.4),
 		 rlang (>= 1.1.0),
 		 finalfit (>= 1.0.6),
-		 knitr (>= 1.4.2),
-		 english (>= 1.2-6)
-License: todo
+		 english (>= 1.2-6),
+		 RColorBrewer (>= 1.1-3),
+		 combinat (>= 0.0-8),
+		 forcats (>= 1.0.0)
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

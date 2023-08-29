@@ -9,33 +9,10 @@ setwd_to_clipboard <- function() {
 #'
 #' This function allows you to calculate the standard error
 #' @param x The data
+#' @param na.rm remove NA (defaults to FALSE)
 #' @export
 se <- function(x, na.rm=FALSE) {
   return(sd(x, na.rm=na.rm)/sqrt(ifelse(na.rm, length(x[!is.na(x)]), length(x))))
-}
-
-#' wtf_is
-#'
-#' Reports details about the supplied object
-#' @param x The object
-#' @export
-wtf_is <- function(x) {
-  # For when you have no idea what something is.
-  # https://stackoverflow.com/questions/8855589
-  cat("1. typeof():\n")
-  print(typeof(x))
-  cat("\n2. class():\n")
-  print(class(x))
-  cat("\n3. mode():\n")
-  print(mode(x))
-  cat("\n4. names():\n")
-  print(names(x))
-  cat("\n5. slotNames():\n")
-  print(slotNames(x))
-  cat("\n6. attributes():\n")
-  print(attributes(x))
-  cat("\n7. str():\n")
-  print(str(x))
 }
 
 #' import_google_form
@@ -51,8 +28,8 @@ wtf_is <- function(x) {
 #' @param post_questions the number of post question columns
 #' @param nr_of_conditions the number of conditions
 #' @param participant_column the column number containing the participant id.
+#' @param verbose defaults to FALSE
 #'
-#' @param x The data
 #' @export
 lazy_import_google_form <- function(url, pre_questions, post_questions, nr_of_conditions, participant_column, verbose = FALSE) {
 
@@ -191,50 +168,6 @@ lazy_check_complete_design <- function(lazy_model, dv) {
 #' @export
 lazy_demo_data <- function(filename) {
   return(system.file(file.path('testdata', filename), package = "lazyhci"))
-}
-
-# #' 'Clean' a character/factor vector like `janitor::clean_names()` does for data frame columns
-# #'
-# #' From https://stackoverflow.com/a/47887699
-# #'
-# #' Most of the internals are from `janitor::clean_names()`
-# #'
-# #' @param x a vector of strings or factors
-# #' @param refactor if `x` is a factor, return a ref-factored factor?
-# #'        Default: `FALSE` == return character vector.
-clean_vec <- function (x, refactor=FALSE) {
-
-  require(magrittr, quietly=TRUE)
-
-  if (!(is.character(x) || is.factor(x))) return(x)
-
-  x_is_factor <- is.factor(x)
-
-  old_names <- as.character(x)
-
-  new_names <- old_names %>%
-    gsub("'", "", .) %>%
-    gsub("\"", "", .) %>%
-    gsub("%", "percent", .) %>%
-    gsub("^[ ]+", "", .) %>%
-    make.names(.) %>%
-    gsub("[.]+", "_", .) %>%
-    gsub("[_]+", "_", .) %>%
-    tolower(.) %>%
-    gsub("_$", "", .)
-
-  dupe_count <- sapply(1:length(new_names), function(i) {
-    sum(new_names[i] == new_names[1:i])
-  })
-
-  new_names[dupe_count > 1] <- paste(
-    new_names[dupe_count > 1], dupe_count[dupe_count > 1], sep = "_"
-  )
-
-  if (x_is_factor && refactor) factor(new_names) else new_names
-
-  return(list(old=old_names, new=new_names))
-
 }
 
 clean_levels <-function(x) {

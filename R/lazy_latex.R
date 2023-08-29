@@ -1,110 +1,102 @@
-#' descriptives
-#'
-#' provides latex code for lazy_objects.
-#'
-#' Currently supported: lazy_descriptives (table)
-#'
-#' @param lazy_model an object produced by lazy_hci.
-#' @export
-lazy_latex <- function(lazy_object) {
-  if(is.null(attr(lazy_object, "lazyhci.latexable")))
-    stop("I don't know how to handle this object.")
+#lazy_latex <- function(lazy_object) {
+#  if(is.null(attr(lazy_object, "lazyhci.latexable")))
+#    stop("I don't know how to handle this object.")
 
-  if(attr(lazy_object, "lazyhci.latexable") == "table")
-    print(kableExtra::kbl(lazy_object, format = "latex", booktabs = TRUE, caption = attr(lazy_object,"lazyhci.caption")))
+#  if(attr(lazy_object, "lazyhci.latexable") == "table")
+#    print(kableExtra::kbl(lazy_object, format = "latex", booktabs = TRUE, caption = attr(lazy_object,"lazyhci.caption")))
 
-  if(attr(lazy_object, "lazyhci.latexable") == "text") {
-    cat(paste0("\\subsection{", attr(lazy_object, "lazyhci.dv"), "}\n\n"))
+#  if(attr(lazy_object, "lazyhci.latexable") == "text") {
+#    cat(paste0("\\subsection{", attr(lazy_object, "lazyhci.dv"), "}\n\n"))
 
-  not_significant_rows <- numeric(0)
+#  not_significant_rows <- numeric(0)
 
-  for (row in 1:nrow(lazy_object$model$anova_table)) {
-    if(lazy_object$model$anova_table[row, "Pr(>F)"] < .05) {
-      # significant
-      cat(fill_template.internal(get_template("omnibus_significant"), lazy_object = lazy_object, row = row))
+#  for (row in 1:nrow(lazy_object$model$anova_table)) {
+#    if(lazy_object$model$anova_table[row, "Pr(>F)"] < .05) {
+#      # significant
+#      cat(fill_template.internal(get_template("omnibus_significant"), lazy_object = lazy_object, row = row))
+#
+#      ## print post-hoc
+#
+#      post_hoc.list <- summary(lazy_object$post_hoc[[rownames(lazy_object$model$anova_table)[row]]][[2]])
+#
+#      for(post_hoc_row in nrow(post_hoc.list)) {
+#        if(post_hoc.list[post_hoc_row, "p.value"] < 0.05) {
+#          cat("Post-hoc tests confirmed significantly ($p", format_p.internal(post_hoc.list[post_hoc_row, "p.value"]) ,"$) higher {dv} for {left} compared to {right}." )
+#        }
+#      }
+#
+#    } else {
+#      not_significant_rows <- c(not_significant_rows, row)
+#    }
+#  }
+#
+#  ##handle not significant effects.
+#
+#
+#
+#  }
+#}
 
-      ## print post-hoc
+#template.variables <- c("omnibus_test", "effect_type", "ivs", "dv", "es")
 
-      post_hoc.list <- summary(lazy_object$post_hoc[[rownames(lazy_object$model$anova_table)[row]]][[2]])
-
-      for(post_hoc_row in nrow(post_hoc.list)) {
-        if(post_hoc.list[post_hoc_row, "p.value"] < 0.05) {
-          cat("Post-hoc tests confirmed significantly ($p", format_p.internal(post_hoc.list[post_hoc_row, "p.value"]) ,"$) higher {dv} for {left} compared to {right}." )
-        }
-      }
-
-    } else {
-      not_significant_rows <- c(not_significant_rows, row)
-    }
-  }
-
-  ##handle not significant effects.
-
-
-
-  }
-}
-
-template.variables <- c("omnibus_test", "effect_type", "ivs", "dv", "es")
-
-fill_template.internal <- function(template, lazy_object, row) {
-  table <- lazy_object$model$anova_table
-
-  ##ominbus test
-  template <- stringr::str_replace_all(template,
-                           pattern = stringr::fixed("{omnibus_test}"),
-                           replacement = build_latex_omnibus.internal(table[row, "num Df"], table[row, "den Df"], table[row, "F"], table[row, "Pr(>F)"]))
-
-  ## eff_type
-  ivs <- stringr::str_split_1(rownames(lazy_object$model$anova_table)[row], ":")
-
-  eff_type <- "main"
-  ivs_pre <- "the"
-
-  if(length(ivs) > 1) {
-    eff_type <- "interaction"
-    ivs_pre <- "between"
-  }
-
-  template <- stringr::str_replace_all(template,
-                                       pattern = stringr::fixed("{effect_type}"),
-                                       replacement = eff_type)
-
-  template <- stringr::str_replace_all(template,
-                                       pattern = stringr::fixed("{ivs}"),
-                                       replacement = paste0(ivs_pre, " ", knitr::combine_words(ivs)))
-
-  template <- stringr::str_replace_all(template,
-                                       pattern = stringr::fixed("{dv}"),
-                                       replacement = attr(lazy_object, "lazyhci.dv"))
-  ##es
-
-
-  # .02 as small, one  of .13 as medium, and one of .26 as large. It seems appropriate to apply the same guidelines to η2 G as well.
-  ges <- table[row, "ges"]
-
-  ges_str <- "large"
-
-  if(ges < 0.26)
-    ges_str <- "medium"
-  else if(ges < 0.13)
-    ges_str <- "small"
-
-  ges_str <- paste0(ges_str, " (\\ges{", ges, "})")
-
-  template <- stringr::str_replace_all(template,
-                                       pattern = stringr::fixed("{es}"),
-                                       replacement = ges_str)
-
-  return(template)
-}
+#fill_template.internal <- function(template, lazy_object, row) {
+#  table <- lazy_object$model$anova_table
+#
+#  ##ominbus test
+#  template <- stringr::str_replace_all(template,
+#                           pattern = stringr::fixed("{omnibus_test}"),
+#                           replacement = build_latex_omnibus.internal(table[row, "num Df"], table[row, "den Df"], table[row, "F"], table[row, "Pr(>F)"]))
+#
+#  ## eff_type
+#  ivs <- stringr::str_split_1(rownames(lazy_object$model$anova_table)[row], ":")
+#
+#  eff_type <- "main"
+#  ivs_pre <- "the"
+#
+#  if(length(ivs) > 1) {
+#    eff_type <- "interaction"
+#    ivs_pre <- "between"
+#  }
+#
+#  template <- stringr::str_replace_all(template,
+#                                       pattern = stringr::fixed("{effect_type}"),
+#                                       replacement = eff_type)
+#
+#  template <- stringr::str_replace_all(template,
+#                                       pattern = stringr::fixed("{ivs}"),
+#                                       replacement = paste0(ivs_pre, " ", knitr::combine_words(ivs)))
+#
+#  template <- stringr::str_replace_all(template,
+#                                       pattern = stringr::fixed("{dv}"),
+#                                       replacement = attr(lazy_object, "lazyhci.dv"))
+#  ##es
+#
+#
+#  # .02 as small, one  of .13 as medium, and one of .26 as large. It seems appropriate to apply the same guidelines to η2 G as well.
+#  ges <- table[row, "ges"]
+#
+#  ges_str <- "large"
+#
+#  if(ges < 0.26)
+#    ges_str <- "medium"
+#  else if(ges < 0.13)
+#    ges_str <- "small"
+#
+#  ges_str <- paste0(ges_str, " (\\ges{", ges, "})")
+#
+#  template <- stringr::str_replace_all(template,
+#                                       pattern = stringr::fixed("{es}"),
+#                                       replacement = ges_str)
+#
+#  return(template)
+#}
 
 build_latex_omnibus.internal <- function(df1, df2, F, p) {
   return(paste0("\\anova{", df1, "}{", df2, "}{", F, "}{", p, "}"))
 }
 
 get_template <- function(template_type) {
-  file <- system.file(file.path('latex', paste0(template_type, '.tex_template')), package = "lazyhci")
+  file <- system.file(file.path('latex_template', paste0(template_type, '.tex_template')), package = "lazyhci")
   lines <- readLines(file)
   return(sample(lines, 1))
 }
@@ -120,8 +112,17 @@ format_p.internal <- function(p){
     return(">.05")
 }
 
-
-lazy_latex2 <- function(lazy_object, round.digits = 2, p.val = 0.05) {
+#' lazy_latex
+#'
+#' provides latex code for lazy_objects.
+#'
+#' Currently supported: lazy_descriptives (table), lazy_analyze (only aov)
+#'
+#' @param lazy_object an object produced by lazy_hci.
+#' @param round.digits the number of digits to print
+#' @param p.val the significant p value
+#' @export
+lazy_latex <- function(lazy_object, round.digits = 2, p.val = 0.05) {
   if(is.null(attr(lazy_object, "lazyhci.latexable")))
     stop("I don't know how to handle this object.")
 
@@ -232,9 +233,9 @@ build_post_hoc_string_aov <- function(lazy_object, post_hoc, term) {
 }
 
 aov_get_post_hoc_string <- function(lazy_object, term) {
-  q_001 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(p.value < 0.001)
-  q_01 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(p.value >= 0.001 & p.value < 0.01)
-  q_05 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(p.value >= 0.01 & p.value < 0.05)
+  q_001 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(.data$p.value < 0.001)
+  q_01 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(.data$p.value >= 0.001 & .data$p.value < 0.01)
+  q_05 <- summary(lazy_object$post_hoc[[term]][[2]]) %>% dplyr::filter(.data$p.value >= 0.01 & .data$p.value < 0.05)
 
   res <- c()
 
@@ -276,13 +277,13 @@ aov_get_test_data <- function(lazy_object, term, round.digits = 2, categorize.p 
   row <- lazy_object$model$anova_table %>%
     dplyr::filter(row.names(lazy_object$model$anova_table) %in% c(term)) %>%
     dplyr::mutate(p = dplyr::if_else(categorize.p,
-                                     format_p.internal(`Pr(>F)`),
-                                     as.character(round(`Pr(>F)`, digits = round.digits)))) %>%
+                                     format_p.internal(.data$`Pr(>F)`),
+                                     as.character(round(.data$`Pr(>F)`, digits = round.digits)))) %>%
     dplyr::mutate(omnibus_test = paste0("\\anova{",
-                                        round(`num Df`, digits = round.digits), "}{",
-                                        round(`den Df`, digits = round.digits), "}{",
-                                        round(F, digits = round.digits), "}{",
-                                        p,
+                                        round(.data$`num Df`, digits = round.digits), "}{",
+                                        round(.data$`den Df`, digits = round.digits), "}{",
+                                        round(.data$F, digits = round.digits), "}{",
+                                        .data$p,
                                         "}")) %>%
     dplyr::mutate(effect_type = dplyr::if_else(
       length(unlist(stringr::str_split(term, pattern = ":"))) == 1,
@@ -292,14 +293,14 @@ aov_get_test_data <- function(lazy_object, term, round.digits = 2, categorize.p 
     #dplyr::mutate(ivs = paste0(get_pretty_name_iv_c(lazy_object$lazy_model, c("position_undo")))) %>%
     dplyr::mutate(dv = attr(lazy_object, "lazyhci.dv")) %>%
     dplyr::mutate(es_str = dplyr::if_else(
-      ges > 0.26,
+      .data$ges > 0.26,
       "large",
-      dplyr::if_else(ges > 0.13,
+      dplyr::if_else(.data$ges > 0.13,
                      "medium",
                      "small")
     )) %>%
     dplyr::mutate(
-      es = paste0(es_str, " (\\ges{", round(ges, digits = round.digits), "})")
+      es = paste0(.data$es_str, " (\\ges{", round(.data$ges, digits = round.digits), "})")
     )
 
   return(row)

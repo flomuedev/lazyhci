@@ -24,7 +24,7 @@ lazy_import_google_form(
 
 \item{participant_column}{the column number containing the participant id.}
 
-\item{x}{The data}
+\item{verbose}{defaults to FALSE}
 }
 \description{
 Imports data from google forms (sheets). Expects study data to be in a specific format:

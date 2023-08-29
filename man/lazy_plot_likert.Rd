@@ -24,6 +24,8 @@ lazy_plot_likert(
 )
 }
 \arguments{
+\item{lazy_model}{the lazy model}
+
 \item{dv}{the name of the column containing the dependent variable.}
 
 \item{grouping}{(optional) one or more grouping IVs}
@@ -48,7 +50,9 @@ lazy_plot_likert(
 
 \item{theme.fontfamily}{(optional) the font family to use}
 
-\item{data}{the data}
+\item{wrap}{description}
+
+\item{group.order}{(optional) the group.order. If grouped, the order of the grouping.}
 }
 \description{
 This function produces a likert model that can be plotted

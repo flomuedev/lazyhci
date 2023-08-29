@@ -12,6 +12,10 @@ lazy_arrange_plots(
 )
 }
 \arguments{
+\item{...}{the plot objects}
+
+\item{ncol}{(optional) number of columns}
+
 \item{nrow}{(optional) number of rows (defaults to 1)}
 
 \item{position}{(optional) position of the legend, defaults to bottom}
