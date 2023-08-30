@@ -73,7 +73,7 @@ lazy_check_complete_design2 <- function(x) {
       missing <- data.sum %>%
         dplyr::filter(n == 0)
       warning("This is not a complete design, go and yell at the student. The following condition data seems to be missing:")
-      warning(paste0(capture.output(as.data.frame(missing)), collapse = "\n"))
+      warning(paste0(capture.output(missing), collapse = "\n"))
     }
 
     if(length(ns) == 1) {

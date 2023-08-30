@@ -310,6 +310,16 @@ interaction_plot.art.internal <- function(emmeans_model, factors) {
   if(length(factors) > 1)
     tvar <- factors[[2]]
 
+  emmeans_model <- emmeans_model %>%
+    dplyr::rename(
+      dplyr::any_of(
+        c(
+          lower.CL = "asymp.LCL",
+          upper.CL = "asymp.UCL"
+        )
+      )
+    )
+
 
   plot <- ggplot2::ggplot(data=emmeans_model, ggplot2::aes_string(x=factors[[1]], y="emmean", colour = tvar)) +
     ggplot2::geom_point() +

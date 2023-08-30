@@ -92,16 +92,7 @@ print.lazyhci_model <- function(x, ...){
                          , collapse=", ")
                        ,".", sep=""))
 
-  lazy_check <- tryCatch(lazy_check_complete_design2(x),
-                         error=function(e) e,
-                         warning=function(w) w)
-
-  if(is(lazy_check, "warning")) {
-
-    for(m in lazy_check$message) {
-      cli::cli_alert_warning(m)
-    }
-  }
+  lazy_check <- lazy_check_complete_design2(x)
 
 
   if(!is.null(x$within.vars)) {

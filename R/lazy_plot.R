@@ -133,7 +133,7 @@ lazy_plot_likert <- function(lazy_model,
                              drop = NULL,
                              survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual", "as_is"),
                              survey_vector_manual = NULL,
-                             title = NULL,
+                             title = DV.pretty,
                              yblank=FALSE,
                              ordered = FALSE,
                              colorscale=NULL,
@@ -238,7 +238,7 @@ lazy_plot_likert <- function(lazy_model,
   assert_font_support.internal(theme.fontfamily)
 
   if(is.null(colorscale)) {
-    colorscale = RColorBrewer::brewer.pal(length(survey_vector), "Dark2")
+    colorscale = RColorBrewer::brewer.pal(length(survey_vector), "Spectral")
   }
 
 
@@ -248,7 +248,7 @@ lazy_plot_likert <- function(lazy_model,
     p <- plot(likert.model, ordered = ordered, colors=colorscale, wrap = wrap)
 
   if(!is.null(title))
-    p <- p + ggtitle(title)
+    p <- p + ggplot2::ggtitle(title)
 
   if(!is.null(theme.fontfamily))
     p <- p + ggplot2::theme_minimal(base_family = theme.fontfamily, base_size = p.basesize)
