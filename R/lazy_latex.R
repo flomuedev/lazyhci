@@ -96,7 +96,7 @@ build_latex_omnibus.internal <- function(df1, df2, F, p) {
 }
 
 get_template <- function(template_type) {
-  file <- system.file(file.path('latex_template', paste0(template_type, '.tex_template')), package = "lazyhci")
+  file <- system.file(file.path('latex_templates', paste0(template_type, '.tex_template')), package = "lazyhci")
   lines <- readLines(file)
   return(sample(lines, 1))
 }
