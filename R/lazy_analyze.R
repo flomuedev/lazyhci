@@ -11,6 +11,7 @@
 #' @param nAGQ the nAGQ argument for glmer
 #' @param lme.formula (optional) a formula for glme or lme calls to override the calculated formula.
 #' @param emm.type the emm type argument. Defaults to "response"
+#' @param na.rm remove na
 #'
 #' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
 #' @importFrom methods hasArg is
@@ -18,7 +19,7 @@
 #' @importFrom rlang .data
 #'
 #' @export
-lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL, emm.type = "response") {
+lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL, emm.type = "response", na.rm = FALSE) {
 
   analysis_type <- match.arg(analysis_type)
   family <- match.arg(family)
@@ -33,10 +34,10 @@ lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "gl
   attr(result, 'lazyhci.anatype') <- analysis_type
 
   result[["lazy_model"]] <- lazy_model
-  result[["descriptives"]] <- lazy_descriptives(lazy_model, dv)
+  result[["descriptives"]] <- lazy_descriptives(lazy_model, dv, na.rm = na.rm)
 
   if(analysis_type == "aov") {
-    model <- fit_model_afex.internal(data = data.clean, participant = participant.clean, DV = DV.clean, within.vars = within.vars.clean, between.vars = between.vars.clean, anova.type = anova.type, transformation = transformation)
+    model <- fit_model_afex.internal(data = data.clean, participant = participant.clean, DV = DV.clean, within.vars = within.vars.clean, between.vars = between.vars.clean, anova.type = anova.type, transformation = transformation, na.rm = na.rm)
     result[["model"]] <- model
     result[["post_hoc"]] <- do.post_hoc.internal(model,
                                                  rownames(model$anova_table %>% dplyr::filter(`Pr(>F)` < 0.05)),
@@ -206,14 +207,14 @@ lmer.fit.inernal <- function(data, participant, DV, within.vars = NULL, between.
 }
 
 
-fit_model_afex.internal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, transformation = NULL, anova.type = 3, es = "ges") {
+fit_model_afex.internal <- function(data, participant, DV, within.vars = NULL, between.vars = NULL, transformation = NULL, anova.type = 3, es = "ges", na.rm = FALSE) {
 
   afex::afex_options(
     correction_aov = "GG",
     emmeans_model = "multivariate"
   )
 
-  aov_ez_string <- "afex::aov_ez(id = participant, dv = DV, data = data, type = anova.type, include_aov = TRUE, es = es"
+  aov_ez_string <- "afex::aov_ez(id = participant, dv = DV, data = data, type = anova.type, include_aov = TRUE, es = es, na.rm = na.rm"
 
   if(!is.null(within.vars))
     aov_ez_string <- paste0(aov_ez_string, ", within = within.vars")

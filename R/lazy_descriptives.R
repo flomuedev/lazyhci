@@ -8,7 +8,7 @@
 #' @param ivs (optional) a vector of strings containing names of the columns identifying the independent variables to plot
 #'
 #' @export
-lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
+lazy_descriptives <- function(lazy_model, dv, ivs = NULL, na.rm = FALSE) {
 
   assert_lazy_model.internal(lazy_model)
   pkg.env$assert_colnames_quietly(lazy_model$source$data, dv, only_colnames=FALSE)
@@ -37,14 +37,14 @@ lazy_descriptives <- function(lazy_model, dv, ivs = NULL) {
     tmp <- lazy_model$data %>%
       dplyr::group_by(dplyr::across(dplyr::all_of(unlist(vars)))) %>%
       dplyr::summarize(n = dplyr::n(),
-                mean = mean(!!as.name(dv)),
-                sd=sd(!!as.name(dv)),
-                se=se(!!as.name(dv)),
-                min=min(!!as.name(dv)),
-                max=max(!!as.name(dv)),
-                median=median(!!as.name(dv)),
-                Q1=quantile(!!as.name(dv))[2],
-                Q3=quantile(!!as.name(dv))[4],
+                mean = mean(!!as.name(dv), na.rm = na.rm),
+                sd=sd(!!as.name(dv), na.rm = na.rm),
+                se=se(!!as.name(dv), na.rm = na.rm),
+                min=min(!!as.name(dv), na.rm = na.rm),
+                max=max(!!as.name(dv), na.rm = na.rm),
+                median=median(!!as.name(dv), na.rm = na.rm),
+                Q1=quantile(!!as.name(dv), na.rm = na.rm)[2],
+                Q3=quantile(!!as.name(dv), na.rm = na.rm)[4],
       )
 
     if(length(vars) == 1)

@@ -84,8 +84,29 @@ lazy_check_complete_design2 <- function(x) {
     }
   }
 
-
 }
+
+lazy_missing <- function(x) {
+  if(!is.null(x$within.vars)) {
+    data.sum <- x$data %>%
+      dplyr::group_by_at(c(x$within.vars, x$participant), .drop=FALSE) %>%
+      dplyr::summarise(
+        n = dplyr::n()
+      )
+
+    ns <- unique(data.sum$n)
+
+    if(length(ns) > 1) {
+      #more
+      missing <- data.sum %>%
+        dplyr::filter(n == 0)
+      return(missing)
+    }
+  }
+  return(NULL)
+}
+
+
 
 
 #' lazy_check_complete_design
