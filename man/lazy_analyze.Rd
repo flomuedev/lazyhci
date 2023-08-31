@@ -13,7 +13,8 @@ lazy_analyze(
   transformation = NULL,
   family = c(NULL, "poisson", "binomial"),
   nAGQ = NULL,
-  lme.formula = NULL
+  lme.formula = NULL,
+  emm.type = "response"
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ lazy_analyze(
 \item{nAGQ}{the nAGQ argument for glmer}
 
 \item{lme.formula}{(optional) a formula for glme or lme calls to override the calculated formula.}
+
+\item{emm.type}{the emm type argument. Defaults to "response"}
 }
 \description{
 This function conducts (non-) parametric analyzes of (multi-) factorial experiments

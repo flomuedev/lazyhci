@@ -10,6 +10,7 @@
 #' @param family the family to use for lme or glme.One of "poisson" or "binomial"
 #' @param nAGQ the nAGQ argument for glmer
 #' @param lme.formula (optional) a formula for glme or lme calls to override the calculated formula.
+#' @param emm.type the emm type argument. Defaults to "response"
 #'
 #' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
 #' @importFrom methods hasArg is
@@ -17,7 +18,7 @@
 #' @importFrom rlang .data
 #'
 #' @export
-lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL) {
+lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL, emm.type = "response") {
 
   analysis_type <- match.arg(analysis_type)
   family <- match.arg(family)
@@ -39,7 +40,7 @@ lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "gl
     result[["model"]] <- model
     result[["post_hoc"]] <- do.post_hoc.internal(model,
                                                  rownames(model$anova_table %>% dplyr::filter(`Pr(>F)` < 0.05)),
-                                                 posthoc.adj, fct_contrasts = post_hoc.internal, fct_ip = interaction_plot.aov.internal)
+                                                 posthoc.adj, fct_contrasts = post_hoc.internal, fct_ip = interaction_plot.aov.internal, emm.type = emm.type)
 
     result[["normality_test"]] <- performance::check_normality(model)
 
@@ -125,7 +126,7 @@ make.factors.internal <- function(data.clean, vars) {
   return(data.clean)
 }
 
-do.post_hoc.internal <- function(model, terms, posthoc.adj = "bonf", fct_contrasts, fct_ip) {
+do.post_hoc.internal <- function(model, terms, posthoc.adj = "bonf", fct_contrasts, fct_ip, emm.type = "response") {
 
   result <- list()
 
@@ -135,7 +136,7 @@ do.post_hoc.internal <- function(model, terms, posthoc.adj = "bonf", fct_contras
 
     tmp <- fct_contrasts(model, unlist(stringr::str_split(term, ":")), posthoc.adj)
 
-    interaction.plot <- fct_ip(tmp[[1]], unlist(stringr::str_split(term, ":")))
+    interaction.plot <- fct_ip(tmp[[1]], unlist(stringr::str_split(term, ":")), emm.type = emm.type)
 
     tmp[["interaction_plot"]] <- interaction.plot
 
@@ -273,7 +274,7 @@ aov_art_fit.internal <- function(data, DV, participant, within.vars = c(), betwe
 
 }
 
-interaction_plot.aov.internal <- function(emmeans_model, factors) {
+interaction_plot.aov.internal <- function(emmeans_model, factors, emm.type = "response") {
 
   if(length(factors) > 3)
     return(NULL)
@@ -287,10 +288,10 @@ interaction_plot.aov.internal <- function(emmeans_model, factors) {
     formula2 <- as.formula(paste(factors[[1]], "~", factors[[2]], " | ", factors[[3]], sep=""))
   }
 
-  return(emmeans::emmip(emmeans_model, formula2))
+  return(emmeans::emmip(emmeans_model, formula2, type = emm.type))
 }
 
-interaction_plot.art.internal <- function(emmeans_model, factors) {
+interaction_plot.art.internal <- function(emmeans_model, factors, emm.type = response) {
 
   if(length(factors) > 3)
     return(NULL)
@@ -376,7 +377,19 @@ print.lazyhci_analysis <- function(x, ...){
     cli::cli_par()
     if(any(x[["sphericity_test"]] < 0.05)) {
       cli::cli_alert_danger("Check for sphericity...{.strong FAILED}")
-      cli::cli_alert_info("The check for sphericity was significant for at least one of you IVs.")
+
+      model.summary <- summary(data.pin.analysis.tct$model)
+
+      for(i in seq_len(length(x[["sphericity_test"]]))) {
+        name <- names(x[["sphericity_test"]])[i]
+        p.value <- x[["sphericity_test"]][i]
+
+        if(p.value < 0.05) {
+          adj <- model.summary$pval.adjustments[name, "GG eps"]
+          cli::cli_alert_info("Mauchly's test indicated a violation of the assumption of sphericity for {name} (< {round(p.value, digits = 3)}). We will use a GG epsilon of {round(adj, digits = 3)}")
+        }
+      }
+
       cli::cli_alert_info("We will correct for these using Greenhouse Geissers method. There is nothing you need to do.")
     } else
       cli::cli_alert_success("Check for sphericity...{.strong OK}")

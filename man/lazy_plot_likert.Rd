@@ -12,7 +12,7 @@ lazy_plot_likert(
   survey_vector = c("auto", "likert-4", "likert-5", "likert-6", "likert-7", "manual",
     "as_is"),
   survey_vector_manual = NULL,
-  title = NULL,
+  title = DV.pretty,
   yblank = FALSE,
   ordered = FALSE,
   colorscale = NULL,
