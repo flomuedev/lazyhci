@@ -16,7 +16,7 @@
 #'
 #' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
 #' @importFrom methods hasArg is
-#' @importFrom utils capture.output readClipboard tail
+#' @importFrom utils capture.output tail
 #' @importFrom rlang .data
 #'
 #' @export
