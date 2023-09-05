@@ -6,6 +6,7 @@
 #' @param lazy_model the data in tidy format
 #' @param dv the name of the column containing the dependent variable
 #' @param ivs (optional) a vector of strings containing names of the columns identifying the independent variables to plot
+#' @param na.rm (optional) should na be removed
 #'
 #' @export
 lazy_descriptives <- function(lazy_model, dv, ivs = NULL, na.rm = FALSE) {

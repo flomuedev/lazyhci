@@ -12,6 +12,7 @@
 #' @param lme.formula (optional) a formula for glme or lme calls to override the calculated formula.
 #' @param emm.type the emm type argument. Defaults to "response"
 #' @param na.rm remove na
+#' @param remove.incomplete remove incomplete cases before the analysis. Only applies to "art"
 #'
 #' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
 #' @importFrom methods hasArg is
@@ -19,7 +20,7 @@
 #' @importFrom rlang .data
 #'
 #' @export
-lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL, emm.type = "response", na.rm = FALSE) {
+lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "glme", "friedman"), posthoc.adj = "bonf", anova.type = 3, transformation = NULL, family = c(NULL, "poisson", "binomial"), nAGQ=NULL, lme.formula=NULL, emm.type = "response", na.rm = FALSE, remove.incomplete = FALSE) {
 
   analysis_type <- match.arg(analysis_type)
   family <- match.arg(family)
@@ -58,6 +59,8 @@ lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "gl
   }
 
   if(analysis_type == "art") {
+    if(remove.incomplete)
+      data.clean <- filter_broken_participants(data.clean, c(within.vars.clean, between.vars.clean), participant.clean, DV.clean, na.rm)
     model <- aov_art_fit.internal(data = data.clean, DV = DV.clean, participant = participant.clean, within.vars = within.vars.clean, between.vars = between.vars.clean)
     model$anovaAOV <-  anova(model$m.aov)
     model$anovaLME <-  anova(model$m.lme)
@@ -114,6 +117,40 @@ lazy_analyze<- function(lazy_model, dv, analysis_type=c("aov", "art", "lme", "gl
   attr(result, 'lazyhci.dv') <- dv
 
   return(result)
+}
+
+filter_broken_participants <- function(x, vars, participant, dv, na.rm = FALSE) {
+  data.sum <- x %>%
+    dplyr::group_by_at(c(vars, participant), .drop=FALSE) %>%
+    dplyr::summarise(
+      n = dplyr::n(),
+      val = mean(!!as.name(dv), na.rm = na.rm)
+    )
+
+  to_remove <- factor(0)
+
+  missing <- data.sum %>%
+    dplyr::filter(n == 0)
+
+  na.nan <- data.sum %>%
+    dplyr::filter(is.na(val) | is.nan(val))
+
+  if(nrow(missing) > 0) {
+    to_remove <- c(to_remove, unique(missing %>% select(!!as.name(participant)) %>% pull()))
+  }
+
+
+  if(nrow(na.nan) > 0) {
+    to_remove <- c(to_remove, unique(na.nan %>% select(!!as.name(participant)) %>% pull()))
+  }
+
+  if(length(to_remove) > 0) {
+    cli::cli_alert_warning("Removed IDs {to_remove} before the analysis because they are missing data. ")
+    x <- x %>% filter(!(!!as.name(participant) %in% to_remove))
+    x[[participant]] <- droplevels(x[[participant]])
+  }
+
+  return(x)
 }
 
 make.factors.internal <- function(data.clean, vars) {

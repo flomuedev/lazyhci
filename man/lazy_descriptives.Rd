@@ -4,7 +4,7 @@
 \alias{lazy_descriptives}
 \title{descriptives}
 \usage{
-lazy_descriptives(lazy_model, dv, ivs = NULL)
+lazy_descriptives(lazy_model, dv, ivs = NULL, na.rm = FALSE)
 }
 \arguments{
 \item{lazy_model}{the data in tidy format}
@@ -12,6 +12,8 @@ lazy_descriptives(lazy_model, dv, ivs = NULL)
 \item{dv}{the name of the column containing the dependent variable}
 
 \item{ivs}{(optional) a vector of strings containing names of the columns identifying the independent variables to plot}
+
+\item{na.rm}{(optional) should na be removed}
 }
 \description{
 calculate descriptives for all subsets

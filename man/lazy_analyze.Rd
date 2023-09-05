@@ -14,7 +14,9 @@ lazy_analyze(
   family = c(NULL, "poisson", "binomial"),
   nAGQ = NULL,
   lme.formula = NULL,
-  emm.type = "response"
+  emm.type = "response",
+  na.rm = FALSE,
+  remove.incomplete = FALSE
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ lazy_analyze(
 \item{lme.formula}{(optional) a formula for glme or lme calls to override the calculated formula.}
 
 \item{emm.type}{the emm type argument. Defaults to "response"}
+
+\item{na.rm}{remove na}
+
+\item{remove.incomplete}{remove incomplete cases before the analysis. Only applies to "art"}
 }
 \description{
 This function conducts (non-) parametric analyzes of (multi-) factorial experiments
