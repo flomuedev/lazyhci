@@ -37,10 +37,10 @@ The `print` method provides informations about the model.
 All plotting functions support a variety of customization options. Please see the individual documentation. `lazyhci` returns standard `ggplot2` objects which can be further themed and manipulated with the usual methods.
 ## Analysis
 
-  `lazy_analyze2` analyzes the given `lazy_model` using different statistical tools. Currently supported are: `aov` (all sorts of (RM) ANOVAs fitted using the `afex` package), `art` (Aligned-Rank Transformation using the `ARTool` package), `lme`,`glmer` (both using the `lme4` package) and `friedman` (using base-r's `friedman.test` function.
+  `lazy_analyze` analyzes the given `lazy_model` using different statistical tools. Currently supported are: `aov` (all sorts of (RM) ANOVAs fitted using the `afex` package), `art` (Aligned-Rank Transformation using the `ARTool` package), `lme`,`glmer` (both using the `lme4` package) and `friedman` (using base-r's `friedman.test` function.
 The function automatically checks assumptions and runs corresponding post-hoc tests. Information about assumption checks, the results of the omnibus test and post-hoc tests are availble through the `print` function. Please see the documentation of the function for more information.
 
-	data.analysis.art <- lazy_analyze2(lazy_model = data.model, dv = "HappinessRating", analysis_type = "art", posthoc.adj = "bonferroni")
+	data.analysis.art <- lazy_analyze(lazy_model = data.model, dv = "HappinessRating", analysis_type = "art", posthoc.adj = "bonferroni")
 
 
 ## Helper

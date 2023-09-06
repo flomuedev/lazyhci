@@ -59,11 +59,16 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
       error = fun.error(!!as.name(dv), na.rm = na.rm)
     )
 
-  if(length(IVs) == 1)
-    p<- ggplot2::ggplot(data.plot, ggplot2::aes(x=!!rlang::sym(IVs[1]), y=mean, fill=!!rlang::sym(IVs[1]))) + ggplot2::xlab(IVs.pretty[1])
 
-  else
+  if(length(IVs) == 1) {
+    p<- ggplot2::ggplot(data.plot, ggplot2::aes(x=!!rlang::sym(IVs[1]), y=mean, fill=!!rlang::sym(IVs[1]))) + ggplot2::xlab(IVs.pretty[1]) + ggplot2::labs(fill = IVs.pretty[1]) + ggplot2::guides(fill="none")
+    p <- p + ggplot2::scale_fill_discrete(labels=lazy_model$source$lvl[[IVs[1]]])
+  } else {
     p<- ggplot2::ggplot(data.plot, ggplot2::aes(x=!!rlang::sym(IVs[1]), y=mean, fill=!!rlang::sym(IVs[2]))) + ggplot2::xlab(IVs.pretty[1]) + ggplot2::labs(fill = IVs.pretty[2])
+    p <- p + ggplot2::scale_fill_discrete(labels=lazy_model$source$lvl[[IVs[2]]])
+  }
+
+  p <- p + ggplot2::scale_x_discrete(labels=lazy_model$source$lvl[[IVs[1]]])
 
   if(!is.null(p.scale_fill_manual))
     p <- p + scale_fill_manual(values = p.scale_fill_manual)
@@ -84,8 +89,12 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
 
 
 
+
   if(length(IVs) == 3) {
-    p <- p + ggplot2::facet_wrap(as.formula(paste("~", IVs[3])))
+    #p <- p + ggplot2::facet_wrap(as.formula(paste("~", IVs[3])), labeller = ggplot2::labeller(IVs[[3]] = lazy_model$source$lvl[[IVs[3]]]))
+    #p <- p + ggplot2::facet_grid(as.formula(paste("~", IVs[3])))
+    #p + ggplot2::facet_grid(as.formula(paste("~", IVs[3])), labeller = ggplot2::labeller(dynamics=lazy_model$source$lvl[[IVs[3]]]))
+    p <- p + ggplot2::facet_grid(as.formula(paste("~", IVs[3])), labeller = ggplot2::labeller(.cols=lazy_model$source$lvl[[IVs[3]]]))
   }
 
   if(length(IVs) == 4) {
@@ -106,6 +115,7 @@ lazy_plot <- function(lazy_model, dv, ivs = NULL, fun.sum = mean, fun.error = sd
 
   return(p)
 }
+
 
 #' likert_plot_model
 #'
@@ -283,7 +293,8 @@ lazy_arrange_plots <- function(..., ncol = length(list(...)), nrow = 1, position
 
   plots <- list(...)
 
-  if(length(plots) == 1 & class(plots) == "list") {
+  #if(length(plots) == 1 & class(plots) == "list") {
+  if(length(plots) == 1 & inherits(plots,"list")) {
     plots = plots[[1]]
   }
 

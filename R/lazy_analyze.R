@@ -14,7 +14,7 @@
 #' @param na.rm remove na
 #' @param remove.incomplete remove incomplete cases before the analysis. Only applies to "art"
 #'
-#' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames
+#' @importFrom stats as.formula anova friedman.test median quantile reformulate sd setNames filter
 #' @importFrom methods hasArg is
 #' @importFrom utils capture.output tail
 #' @importFrom rlang .data
