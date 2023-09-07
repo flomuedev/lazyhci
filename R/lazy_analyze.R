@@ -146,7 +146,7 @@ filter_broken_participants <- function(x, vars, participant, dv, na.rm = FALSE) 
 
   if(length(to_remove) > 0) {
     cli::cli_alert_warning("Removed IDs {to_remove} before the analysis because they are missing data. ")
-    x <- x %>% filter(!(!!as.name(participant) %in% to_remove))
+    x <- x %>% dplyr::filter(!(!!as.name(participant) %in% to_remove))
     x[[participant]] <- droplevels(x[[participant]])
   }
 
