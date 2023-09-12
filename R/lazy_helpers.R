@@ -65,8 +65,16 @@ lazy_check_complete_design2 <- function(x) {
       #more
       missing <- data.sum %>%
         dplyr::filter(n == 0)
-      warning("This is not a complete design, go and yell at the student. The following condition data seems to be missing:")
-      warning(paste0(capture.output(missing), collapse = "\n"))
+
+      if(nrow(missing) > 0) {
+        warning("This is not a complete design, go and yell at the student. The following condition data seems to be missing:")
+
+      } else {
+        warning("Your measurements are not balanced, go and yell at the student. The following condition data has fewer measurements compared to the largest condition:")
+        warning(paste0(capture.output(data.sum %>% dplyr::filter(n < max(data.sum$n))), collapse = "\n"))
+
+      }
+
     }
 
     if(length(ns) == 1) {

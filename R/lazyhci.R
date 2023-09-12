@@ -86,9 +86,9 @@ get_pretty_name_dv <- function(lazy_model, dv) {
 print.lazyhci_model <- function(x, ...){
   cli::cli_h1("This is a lazy hci model.")
 
-  cli::cli_alert_info(paste("The model contains data of ", x$data %>% dplyr::pull(x$participant) %>% nlevels(), " participants identified as ",
+  cli::cli_alert_info(paste("The model contains data of ", x$data %>% dplyr::pull(!!as.name(x$participant)) %>% nlevels(), " participants identified as ",
                        paste(
-                         x$data %>% dplyr::pull(x$participant) %>% levels()
+                         x$data %>% dplyr::pull(!!as.name(x$participant)) %>% levels()
                          , collapse=", ")
                        ,".", sep=""))
 
